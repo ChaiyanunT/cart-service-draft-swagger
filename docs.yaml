@@ -1,0 +1,181 @@
+openapi: 3.0.3
+info:
+  title: Cart Service Draft Api Spec - OpenAPI 3.0
+  version: 1.0.0
+externalDocs:
+  description: Cart Service draft spec swagger
+  url: http://swagger.io
+servers:
+  - url: "https://proxy.qa.nocnoc-internal.com/cart-service"
+paths:
+  /v1/user/quotation/promotion/validation:
+    post:
+      summary: Validate list of coupon code with quotation data
+      tags:
+        - Quotation
+      parameters:
+       - name: x-nocnoc-platform
+         in: header
+         schema:
+          type: string
+       - name: x-nocnoc-device-os
+         in: header
+         schema:
+          type: string
+       - name: x-cookie-id
+         in: header
+         schema:
+          type: string
+       - name: x-session-id
+         in: header
+         schema: 
+          type: string
+       - name: x-nocnoc-device-id
+         in: header
+         description: device id generate from FE
+         schema:
+          type: string
+       - name: x-request-id
+         in: header
+         schema:
+          type: string
+       - name: x-nocnoc-id
+         in: header
+         required: true
+         description: nocnoc-id decrypt by local authorizer
+         schema:
+          type: string
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/promotionRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/quotationPromotionValidationResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+          
+        '401':
+          description: Unauthorize
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+components:
+  schemas:
+    baseQuotationRequest:
+      type: object
+      required:
+        - quotationSignature
+        - quotationData
+      properties:
+        quotationSignature:
+          type: string
+          example: hash HMAC
+        quotationData:
+          type: string
+          example: BASE564
+    promotionRequest:
+      allOf:
+        - $ref: '#/components/schemas/baseQuotationRequest'
+      type: object
+      properties:
+        couponCodes:
+          type: array
+          items:
+            type: string
+    quotationPromotionValidationResponse:
+      type: object
+      properties:
+        meta:
+          type: object
+          properties:
+            totalAppliedCount:
+              type: number
+              example: 3
+        data:
+          type: object
+          required: ["coupons"]
+          properties:
+            coupons:
+              type: array
+              items:
+                $ref: '#/components/schemas/coupons'
+    coupons:
+      type: object
+      required: ['promotiomId','type', 'couponCode', 'status']
+      properties:
+        promotionId:
+          type: number
+          example: 1234
+        couponCode:
+          type: string
+          example: "NN1234"
+        limitApplies:
+          type: integer
+          example: 1
+        type:
+          type: string
+          description: phase1 support only seller platform
+          enum:
+           - seller
+           - platform
+           - voucher
+           - partner
+        status:
+          type: string
+          enum:
+            - VALID
+            - NOTFOUND
+            - FULLY_REDEEMED
+            - ORDER_VALUE_NOT_REACH_MINIMUM
+            - USER_NOT_MATCHED
+            - USER_TYPE_NOT_REACH_CONDITION
+            - ALREADY_REDEEMED
+    languageModel:
+      type: object
+      required: ['en']
+      properties:
+        en:
+          type: string
+        th:
+          type: string
+    errorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required: ["title", "message"]
+            properties:
+              title:
+                type: string
+              message:
+                type: string
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: "JWT"
+      
+security:
+  - bearer: []
+
