@@ -398,6 +398,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/cartSellerModel'
+        unavailableProducts:
+          type: array
+          items:
+               $ref: '#/components/schemas/UnavailableProduct'
     cartSellerModel:
       type: object
       required: 
@@ -687,7 +691,8 @@ components:
             invalidProducts:
               type: array
               items:
-                $ref: '#/components/schemas/invalidProducts'
+                 $ref: '#/components/schemas/invalidProducts'
+
     ErrorResponseModel:
       type: object
       properties:
@@ -930,19 +935,60 @@ components:
               items:
                 type: object
                 properties:
+                  collectionName:
+                    type: string
+                    example: "Fall Collection"
+                  currency:
+                    type: string
+                    example: "฿"
+                  imageUrl:
+                    type: string
+                    example: "https://example.com/image.jpg"
+                  price:
+                    type: number
+                    format: float
+                    example: 49.99
+                  priceOriginal:
+                    type: number
+                    format: float
+                    example: 79.99
+                  quantity:
+                    type: integer
+                    example: 10
+                  sellerId:
+                    type: integer
+                    example: 1234
                   skuNumber:
                     type: string
-                    example: 123
-                  quantity:
-                    type: number
-                    example: 5
-                  sellerId:
-                    type: number
-                    example: 1234
+                    example: "SKU123456"
+                  title:
+                    type: object
+                    properties:
+                      en:
+                        type: string
+                        example: "Winter Jacket"
+                      th:
+                        type: string
+                        example: "แจ็คเก็ตฤดูหนาว"
+                  type:
+                    type: string
+                    enum: ["OUT_OF_STOCK","UNAVAILABLE"]            
                     required:
                     - skuNumber
                     - quantity
                     - sellerId
+                  categoryId:
+                    type: number
+                    example: 12245
+                  category:
+                    type: string
+                    example: Electronic Appliances
+                  subCategory:
+                    type: string
+                    example: Air Conditioners
+                  subSubCategory:
+                    type: string
+                    example: Air Conditioner  
     CreateQuotationRequest:
       required:
         - sellers
@@ -984,7 +1030,9 @@ components:
             invalidProducts:
               type: array
               items:
-                $ref: '#/components/schemas/invalidProducts'
+                oneOf:
+                  - $ref: '#/components/schemas/invalidProducts'
+
     CreateQuotationDetail:
       type: object
       required:
@@ -1012,6 +1060,56 @@ components:
               quantity:
                 type: integer
                 example: 10
+    UnavailableProduct:
+      type: object
+      properties:
+        collectionName:
+          type: string
+          example: "Fall Collection"
+        currency:
+          type: string
+          example: "USD"
+        id:
+          type: string
+          example: "12345"
+        imageUrl:
+          type: string
+          example: "https://example.com/image.jpg"
+        price:
+          type: number
+          format: float
+          example: 49.99
+        priceOriginal:
+          type: number
+          format: float
+          example: 79.99
+        skuNumber:
+          type: string
+          example: "SKU123456"
+        title:
+          type: object
+          properties:
+            en:
+              type: string
+              example: "Winter Jacket"
+            th:
+              type: string
+              example: "แจ็คเก็ตฤดูหนาว"
+        type:
+          type: string
+          enum: [UNAVAILABLE,OUT_OF_STOCK]
+        categoryId:
+            type: number
+            example: 12245
+        category:
+            type: string
+            example: Electronic Appliances
+        subCategory:
+            type: string
+            example: Air Conditioners
+        subSubCategory:
+            type: string
+            example: Air Conditioner  
   securitySchemes:
     bearer:
       type: http
