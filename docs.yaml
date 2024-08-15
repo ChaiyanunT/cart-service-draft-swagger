@@ -78,6 +78,220 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/errorResponse'
+  /v1/user/quotation:
+    post:
+      tags:
+        - Quotation
+      summary: Create Quotation
+      description: ''
+      operationId: Create Quotation
+      parameters:
+        - name: x-nocnoc-platform
+          in: header
+          description: app / web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          description: android, ios, desktop, tablet, mobile
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-cookie-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string 
+        - name: x-nocnoc-session-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string 
+        - name: Accept-Language
+          in: header
+          description: Not Required But Default value en
+          required: false
+          schema:
+            type: string 
+      requestBody:
+        content:
+          application/json:
+            schema:
+               $ref: '#/components/schemas/CreateQuotationRequest'
+      responses:
+        '200':
+          description: products with delivery options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateQuotationResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseModel'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseModel'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseModel'
+    put:
+      tags:
+        - Quotation
+      summary: Update Quotation
+      description: ''
+      operationId: Update Quotation
+      parameters:
+        - name: x-nocnoc-platform
+          in: header
+          description: app / web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          description: android, ios, desktop, tablet, mobile
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-cookie-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string 
+        - name: x-nocnoc-session-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string 
+        - name: Accept-Language
+          in: header
+          description: Not Required But Default value en
+          required: false
+          schema:
+            type: string 
+      requestBody:
+        required: true 
+        content:
+          application/json:
+            schema:
+               $ref: '#/components/schemas/UpdateQuotationRequest'
+      responses:
+        '200':
+          description: products with delivery options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateQuotationResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseModel'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseModel'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseModel'
+  /v1/user/cart:
+    get:
+      summary: Get Cart
+      tags:
+        - Cart
+      parameters:
+        - name: x-nocnoc-platform
+          in: header
+          description: app / web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          description: android, ios, desktop, tablet, mobile
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-cookie-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string 
+        - name: x-nocnoc-session-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string 
+        - name: x-nocnoc-device-id
+          in: header
+          description: Required in guest mode
+          required: false
+          schema:
+            type: string 
+        - name: Accept-Language
+          in: header
+          description: Not Required But Default value en
+          required: false
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/cartReponseModel'
+          
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+          
+        '401':
+          description: Unauthorize
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
 components:
   schemas:
     baseQuotationRequest:
@@ -170,6 +384,634 @@ components:
                 type: string
               message:
                 type: string
+    cartReponseModel:
+      type: object
+      properties:
+        cartId:
+          type: string
+          description: userId or deviceId
+          example: 7530
+        totalItemCount:
+          type: number
+          example: 3
+        sellers:
+          type: array
+          items:
+            $ref: '#/components/schemas/cartSellerModel'
+    cartSellerModel:
+      type: object
+      required: 
+        - id
+        - name 
+      properties:
+        id:
+          type: number
+          example: 3530
+        name:
+          type: string
+          example: tnk.seller
+        logo:
+          type: string
+          example: 'http://cdn.nocnoc.com'
+        pageUrl:
+          type: string
+          example: 'http://cdn.nocnoc.com'
+        tag:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                example: quality-shop
+              name:
+                type: string
+                example: quality-shop
+        products:
+            type: array
+            items:
+              $ref: '#/components/schemas/cartProductModel'
+        promotion:
+          type: object
+          properties:
+            shopCoupon:
+              $ref: '#/components/schemas/cartShopPromotionModel'
+    cartProductModel:
+      type: object
+      required: ['id', 'skuNumber', 'selected', 'title', 'price', 'priceOriginal', 'minQuantity', 'quantity', 'stock', 'unit']
+      properties:
+        id:
+          type: string
+          example: 'ggghh-dsad-sdfdsf'
+        skuNumber:
+          type: string
+          example: '120123'
+        selected:
+          type: boolean
+          example: true
+        title:
+          $ref: '#/components/schemas/languageModel'
+        pageUrl:
+          $ref: '#/components/schemas/languageModel'
+        imageUrl:
+          type: string
+          example: 'https://cdn.nocnoc.com'
+        badges:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                example: sample
+              name:
+                type: string
+                example: sample
+              type:
+                type: string
+                example: badge
+        price:
+          type: number
+          format: double
+          example: 123.45
+        priceOriginal:
+          type: number
+          format: double
+          example: 150.7
+        currency:
+          type: string
+          example: ฿
+          enum:
+            - ฿
+        cheaperFromAddCartDate:
+          type: number
+          format: double
+          example: 50.5
+        minQuantity:
+          type: number
+          example: 5
+        quantity:
+          type: number
+          example: 10
+        isFreeInstallation:
+          type: boolean
+          example: true
+          description: detect from badge free-installation
+        stock:
+          type: number
+          example: 999
+        isCustomMade:
+          type: boolean
+          example: true
+        collectionName:
+          type: string
+          example: white ,1
+        unit:
+          $ref: '#/components/schemas/languageModel'
+        bundles:
+          type: array
+          items:
+            $ref: '#/components/schemas/cartProductBundleModel'
+                    
+          
+    cartProductBundleModel:
+        type: object
+        required: ['id', 'skuNumber', 'selected', 'parentId', 'price', 'minimumQuantity', 'quantity', 'stock']
+        properties:
+          id:
+            type: object
+            example: 'ggghh-dsad-sdfdsf'
+          skuNumber:
+            type: string
+            example: 120123
+          selected:
+            type: boolean
+            example: true
+          title:
+            $ref: '#/components/schemas/languageModel'
+          imageUrl:
+            type: string
+            example: 'http://cdn.nocnoc.com'
+          parentId: 
+            type: string
+            example: 120124
+          price:
+            type: number
+            format: double
+            example: 1200.5
+          priceOriginal:
+            type: number
+            format: double
+            example: 1500.6
+          currency:
+            type: string
+            example: ฿
+          minimumQuantity:
+            type: number
+            example: 5
+          quantity:
+            type: number
+            example: 10
+          stock:
+            type: number
+            example: 9990
+          collectionName:
+            type: string
+            example: white
+          categoryId:
+            type: number
+            example: 12245
+          category:
+            type: string
+            example: Electronic Appliances
+          subCategory:
+            type: string
+            example: Air Conditioners
+          subSubCategory:
+            type: string
+            example: Air Conditioner          
+          
+    cartShopPromotionModel:
+      type: object
+      properties:
+        discount:
+          type: number
+          format: double
+          example: 5000.5
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/cartPromotionItemModel'
+    cartPromotionItemModel:
+      type: object
+      required: ["id", "title", "discount", "discountType", "startedAt", "endedAt"]
+      properties:
+        id:
+          type: number
+          example: 1245
+        title:
+          type: string
+          example: summer sale
+        promotionName:
+          type: string
+          example: summer sale
+        couponCode:
+          type: string
+          example: "NN-12345"
+        maxAllowedDiscount:
+          type: number
+          example: 5000
+        discount:
+          type: number
+          format: double
+          example: 5
+        discountType:
+          type: string
+          example: PERCENT
+          enum:
+            - PERCENT
+            - FLAT
+        condition:
+          type: string
+          description: 'TBC locale logic should in bff or be'
+          example: 'เมื่อช้อปครบ ฿3,000, ลดสูงสุด ฿1,500' 
+        description:
+          type: string
+          example: 'คูปองนี้มีจำนวนจำกัด' 
+          description: field promotionDetails จาก promotion-service
+        imageUrl:
+          type: string
+          example: "http://nocnoc.com"
+        selected:
+          type: boolean
+          example: true
+        startedAt:
+          type: string
+          example: "2024-04-01T12:00:00Z"
+        endedAt:
+          type: string
+          example: "2024-04-01T12:00:00Z"
+    UpdateQuotationRequest:
+      type: object
+      required:
+        - quotationSignature
+        - quotationData
+      properties:
+        quotationSignature:
+          type: string
+          example: hmac
+        quotationData:
+          type: string
+          example: base64
+        addressId:
+              type: number
+              example: 11150
+
+        invalidProducts:
+              type: array
+              items:
+                type: object
+                properties:
+                  skuNumber:
+                    type: string
+                    example: 123
+                  quantity:
+                    type: number
+                    example: 5
+                  sellerId:
+                    type: number
+                    example: 1234
+                    required:
+                    - skuNumber
+                    - quantity
+                    - sellerId
+    UpdateQuotationResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          required:
+            - quotation
+            - quotationSignature
+            - quotationData
+          properties:
+            quotationSignature:
+              type: string
+              example: hmac
+            quotationData:
+              type: string
+              example: base64
+            quotation:
+              type: object
+              $ref: '#/components/schemas/QuotationDetail'
+            invalidProducts:
+              type: array
+              items:
+                $ref: '#/components/schemas/invalidProducts'
+    ErrorResponseModel:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      required:
+        - title
+        - detail
+      properties:
+        title:
+          type: string
+          format: string
+          example: title
+        detail:
+          type: string
+          format: string
+          example: detail
+    QuotationDetail:
+      type: object
+      required:
+        - quotationId
+        - sellers
+        - addressId
+      properties:
+        quotationId:
+          type: string
+          example: "MMDD-{{timestamp}}"
+        addressId:
+          type: number
+          example: 15
+        sellers:
+          type: array
+          items:
+            $ref: '#/components/schemas/SellerDetail'
+    SellerDetail:
+      type: object
+      required:
+        - id
+        - name
+        - saleOrders
+      properties:
+        id:
+          type: string
+          example: 10
+        name:
+          type: string
+          example: "nocnoc"
+        logo:
+          type: string
+          example: "http://cdn.nocnoc.com"
+        pageUrl:
+          type: string
+          example: "http://cdn.nocnoc.com"
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagDetail'
+        promotion:
+          type: object
+          properties:
+            shopPromotion:
+              type: object
+              properties:
+                discount:
+                  type: number
+                  format: float
+                  example: 125.51
+        saleOrders:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleOrderDetail'
+
+    SaleOrderDetail:
+      type: object
+      required:
+        - saleOrderRef
+        - products
+        - defaultDeliveryOption
+        - deliveryOptions
+      properties:
+        saleOrderRef:
+          type: string
+          example: 1847C5D06DF-182AA283221-1668533823437
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductDetail'
+        defaultDeliveryOption:
+          type: object
+          required:
+            - carrierId
+          properties:
+           carrierId:
+            type: number
+            example: 12
+        deliveryOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryOptionDetail'
+    ProductDetail:
+      type: object
+      required:
+        - skuNumber
+        - price
+        - priceOriginal
+        - currency
+      properties:
+        skuNumber:
+          type: string
+          example: 120123
+        title:
+          type: object
+          properties:
+            en:
+              type: string
+            th:
+              type: string
+        pageUrl:
+          type: object
+          properties:
+            en:
+              type: string
+            th:
+              type: string
+        imageUrl:
+          type: string
+          example: https://cdn.nocnoc.com
+        badges:
+          type: array
+          items:
+            $ref: '#/components/schemas/BadgeDetail'
+        price:
+          type: number
+          example: 120.12
+        priceOriginal:
+          type: number
+          example: 120.12
+        currency:
+          type: string
+          example: ฿
+        quantity:
+          type: integer
+          example: 10
+        collectionName:
+          type: string
+          example: white ,1
+        categoryId:
+          type: number
+          example: 12245
+        category:
+          type: string
+          example: Electronic Appliances
+        subCategory:
+          type: string
+          example: Air Conditioners
+        subSubCategory:
+          type: string
+          example: Air Conditioner
+    BadgeDetail:
+      type: object
+      required:
+        - type
+        - name
+        - key
+      properties:
+        key:
+          type: string
+          example: example
+        name:
+          type: string
+          example: example
+        type:
+          type: string
+          example: badge
+    TagDetail:
+      type: object
+      properties:
+        key:
+          type: string
+          example: quality-shop
+        name:
+          type: string
+          example: quality-shop
+    DeliveryOptionDetail:
+      type: object
+      required:
+        - carrierId
+        - carrierName
+        - finalShippingCost
+        - shippingCost
+        - currency
+        - title
+        - description
+        - minExpectedDeliveryTime
+        - maxExpectedDeliveryTime
+      properties:
+        carrierId:
+          type: integer
+          example: 12
+        carrierName:
+          type: string
+          example: Kerry
+        minExpectedDeliveryTime:
+          type: string
+          format: date-time
+        maxExpectedDeliveryTime:
+          type: string
+          format: date-time
+        finalShippingCost:
+          type: number
+          example: 10
+        shippingCost:
+          type: number
+          example: 50
+        platformShippingDiscount:
+          type: number
+          example: 100
+        sellerShippingDiscount:
+          type: number
+          example: 20
+        optionType:
+          type: string
+          example: standardDelivery
+        warehouseAddress:
+          type: string
+          example: "22 ซอยสามัคคี 3 ถนนประชาชื่น แขวง ท่าทราย เขตห้วยขวาง กรุงเทพมหานคร"
+        carrierType:
+          type: string
+          example: standard
+        currency:
+          type: string
+          example: ฿
+    invalidProducts:
+              type: array
+              items:
+                type: object
+                properties:
+                  skuNumber:
+                    type: string
+                    example: 123
+                  quantity:
+                    type: number
+                    example: 5
+                  sellerId:
+                    type: number
+                    example: 1234
+                    required:
+                    - skuNumber
+                    - quantity
+                    - sellerId
+    CreateQuotationRequest:
+      required:
+        - sellers
+        - addressId
+      type: object
+      properties:
+        addressId:
+          type: integer
+          example: 1
+        couponCodes:
+          type: array
+          items:
+            type: string
+            example: "1234"
+        sellers:
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/CreateQuotationDetail'
+            
+    CreateQuotationResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          required:
+            - quotation
+            - userSelection
+          properties:
+            quotationSignature:
+              type: string
+              example: hmac
+            quotationData:
+              type: string
+              example: base64
+            quotation:
+              type: object
+              $ref: '#/components/schemas/QuotationDetail'
+            invalidProducts:
+              type: array
+              items:
+                $ref: '#/components/schemas/invalidProducts'
+    CreateQuotationDetail:
+      type: object
+      required:
+        - sellerId
+        - products
+        - couponCodes
+      properties:
+        sellerId:
+          type: string
+          example: 123
+        products:
+          type: array
+          items:
+            type: object
+            required:
+                - skuNumber
+                - quantity
+            properties:
+              skuNumber:
+                type: string
+                example: "123456"
+              title:
+                type: string
+                example: "tv 42 inch"
+              quantity:
+                type: integer
+                example: 10
   securitySchemes:
     bearer:
       type: http
