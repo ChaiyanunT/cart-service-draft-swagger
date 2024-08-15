@@ -506,6 +506,18 @@ components:
         collectionName:
           type: string
           example: white ,1
+        categoryId:
+            type: number
+            example: 12245
+        category:
+            type: string
+            example: Electronic Appliances
+        subCategory:
+            type: string
+            example: Air Conditioners
+        subSubCategory:
+            type: string
+            example: Air Conditioner  
         unit:
           $ref: '#/components/schemas/languageModel'
         bundles:
@@ -557,19 +569,7 @@ components:
             example: 9990
           collectionName:
             type: string
-            example: white
-          categoryId:
-            type: number
-            example: 12245
-          category:
-            type: string
-            example: Electronic Appliances
-          subCategory:
-            type: string
-            example: Air Conditioners
-          subSubCategory:
-            type: string
-            example: Air Conditioner          
+            example: white        
           
     cartShopPromotionModel:
       type: object
