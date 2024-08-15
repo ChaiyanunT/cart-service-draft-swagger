@@ -650,7 +650,28 @@ components:
         addressId:
               type: number
               example: 11150
-
+        sellers:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 0
+              saleOrders:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    defaultDeliveryOption:
+                      type: object
+                      properties:
+                        carrierId:
+                          type: integer
+                          example: 0
+                    saleOrderRef:
+                      type: string
+                      example: "string"
         invalidProducts:
               type: array
               items:
