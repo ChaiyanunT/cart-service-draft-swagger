@@ -133,7 +133,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseModel'
+                $ref: '#/components/schemas/errorResponse'
         '401':
           description: Unauthorized
         '403':
@@ -141,13 +141,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseModel'
+                $ref: '#/components/schemas/errorResponse'
         '500':
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseModel'
+                $ref: '#/components/schemas/errorResponse'
     put:
       tags:
         - Quotation
@@ -203,7 +203,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseModel'
+                $ref: '#/components/schemas/errorResponse'
         '401':
           description: Unauthorized
         '403':
@@ -211,13 +211,133 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseModel'
+                $ref: '#/components/schemas/errorResponse'
         '500':
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseModel'
+                $ref: '#/components/schemas/errorResponse'
+  /v1/user/quotation/summary:
+    post:
+      tags:
+        - Quotation
+      parameters:
+       - name: x-nocnoc-id
+         in: header
+         required: true
+         description: nocnoc-id decrypt by local authorizer
+         schema:
+          type: string
+       - name: Accept-Language
+         in: header
+         description: not required and default to en
+         schema:
+          type: string
+       - name: x-nocnoc-platform
+         in: header
+         required: false
+         description: nocnoc-platform (when = "app" will get loyalty point)
+         schema:
+          type: string
+         example: "web"
+      summary: Calculate price and discount
+      description: Calculate price and discount for both product and shipping
+      operationId: quotationSummary
+      requestBody:
+        description: Sum the final quotation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/quotationSummaryRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/quotationSummaryResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/errorResponse'
+              examples:
+                InvalidParameter:
+                  summary: invalid parameter
+                  value:
+                    errors:
+                      title: "invalid_parameter"
+                      message: "Invalid carrierId, please check request body"
+                InvalidSignature:
+                  summary: invalid signature
+                  value:
+                    errors:
+                      title: "invalid_signature"
+                      message: "Invalid quotationSignature, plase check request body"
+                InvalidDeliveryOption:
+                  summary: invalid delivery option
+                  value:
+                    errors:
+                      title: "invalid_delivery_option"
+                      message: "delivery option not found"
+                InvalidQuotationData:
+                  summary: invalid quotation data
+                  value:
+                    errors:
+                      title: "invalid_quotation_data"
+                      message: "Cannot decode quotationData, plase check request body"
+        '401':
+          description: Unauthorize
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/errorResponse'
+              examples:
+                ExternalServerError:
+                  summary: Internal server error
+                  value:  
+                    errors:
+                      title: "internal_server_error"
+                      message: "Something wrong, or {{some error message}}"
+                UnknownPromotionBusinessType:
+                  summary: Unknown promotion business type
+                  value:  
+                    errors:
+                      title: "unknown_promotion_business_type"
+                      message: "Unknown promotion business type"
+        '502':
+          description: External Server Error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/errorResponse'
+              examples:
+                ExternalServerError:
+                  summary: External server error
+                  value:  
+                    errors:
+                      title: "external_server_error"
+                      message: "[Promotion] Get seller promotion sku pricing has error"
   /v1/user/cart:
     get:
       summary: Get Cart
@@ -292,6 +412,536 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/errorResponse'
+  /v1/user/orders:    
+    post:
+      summary: Create order
+      tags:
+      - Order
+      parameters:
+      - description: x-nocnoc-platform
+        in: header
+        name: x-nocnoc-platform
+        schema:
+          type: string
+      - description: x-nocnoc-device-os
+        in: header
+        name: x-nocnoc-device-os
+        schema:
+          type: string
+      - description: Not Required when x-nocnoc-platform is web
+        in: header
+        name: x-nocnoc-cookie-id
+        schema:
+          type: string
+      - description: Not Required when x-nocnoc-platform is web
+        in: header
+        name: x-nocnoc-session-id
+        schema:
+          type: string
+      - description: x-nocnoc-device-id
+        in: header
+        name: x-nocnoc-device-id
+        schema:
+          type: string
+      - description: x-nocnoc-id
+        in: header
+        name: x-nocnoc-id
+        schema:
+          type: string
+      - description: accept-language
+        in: header
+        name: accept-language
+        schema:
+          type: string
+      requestBody:
+        description: create order request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createOrderRequest'
+        required: true
+      responses:
+        '201':
+          description: Created operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createOrderResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/errorResponse'
+              examples:
+                ErrorUnmarshal:
+                  summary: error unmarshal
+                  value:
+                    errors:
+                      title: "error_unmarshal"
+                      message: "cannot unmarshal data"
+                ErrorDecode64:
+                  summary: error decode64
+                  value:
+                    errors:
+                      title: "error_decode64"
+                      message: "decode64 data error"
+                InvalidSignature:
+                  summary: invalid signature
+                  value:
+                    errors:
+                      title: "invalid_signature"
+                      message: "invalid signature"
+                NotfoundAddress:
+                  summary: not found address
+                  value:
+                    errors:
+                      title: "notfound_address"
+                      message: "not found address"
+                NotfoundProduct:
+                  summary: not found product
+                  value:
+                    errors:
+                      title: "notfound_product"
+                      message: "not found product"
+                InvalidAllShipping:
+                  summary: invalid all shipping
+                  value:
+                    errors:
+                      title: "invalid_all_shipping"
+                      message: "all shipping not available"
+                InvalidSomeShipping:
+                  summary: invalid some shipping
+                  value:
+                    errors:
+                      title: "invalid_some_shipping"
+                      message: "some shipping not available"
+                OutOfStockProduct:
+                  summary: out of stock product
+                  value:
+                    errors:
+                      title: "out_of_stock_product"
+                      message: "product out of stock"
+                InvalidSelectedDelivery:
+                  summary: invalid selected delivery
+                  value:
+                    errors:
+                      title: "invalid_selected_delivery"
+                      message: "invalid selected delivery"
+                InvalidShippingCost:
+                  summary: invalid shipping cost
+                  value:
+                    errors:
+                      title: "invalid_shipping_cost"
+                      message: "invalid shipping cost"
+                InvalidPrice:
+                  summary: invalid price
+                  value:
+                    errors:
+                      title: "invalid_price"
+                      message: "invalid price"
+                InvalidPlatformPartnerCoupon:
+                  summary: invalid platform partner coupon
+                  value:
+                    errors:
+                      title: "invalid_platform_partner_coupon"
+                      message: "invalid platform partner coupon"
+                InvalidShopCoupon:
+                  summary: invalid shop coupon
+                  value:
+                    errors:
+                      title: "invalid_shop_coupon"
+                      message: "invalid shop coupon"
+                InvalidPoint:
+                  summary: invalid point
+                  value:
+                    errors:
+                      title: "invalid_point"
+                      message: "invalid point"
+                InvalidSummary:
+                  summary: invalid summary
+                  value:
+                    errors:
+                      title: "invalid_summary"
+                      message: "invalid summary"
+                InvalidCouponPayment:
+                  summary: invalid coupon payment
+                  value:
+                    errors:
+                      title: "invalid_coupon_payment"
+                      message: "invalid coupon payment"
+                InvalidIpp:
+                  summary: invalid ipp
+                  value:
+                    errors:
+                      title: "invalid_ipp"
+                      message: "invalid ipp"
+                InvalidIppPromotion:
+                  summary: invalid ipp promotion
+                  value:
+                    errors:
+                      title: "invalid_ipp_promotion"
+                      message: "invalid ipp promotion"
+                ErrorGetUserInfo:
+                  summary: error get user info
+                  value:
+                    errors:
+                      title: "error_get_user_info"
+                      message: "error get user info"
+                NotfoundUserInfo:
+                  summary: not found user info
+                  value:
+                    errors:
+                      title: "notfound_user_info"
+                      message: "not found user info"
+        '401':
+          description: Unauthorize
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/errorResponse'
+              examples:
+                ErrorGetPromotionDetail:
+                  summary: error get promotion detail
+                  value:
+                    errors:
+                      title: "error_get_promotion_detail"
+                      message: "error get promotion detail"
+                ErrorBreakdownSaleOrder:
+                  summary: error breakdown sale order
+                  value:
+                    errors:
+                      title: "error_breakdown_sale_order"
+                      message: "error breakdown sale order"
+                ErrorGetNoncnocDiscountPoint:
+                  summary: error get noncnoc discount point
+                  value:
+                    errors:
+                      title: "error_get_noncnoc_discount_point"
+                      message: "error get noncnoc discount point"
+                ErrorGetAddress:
+                  summary: error get address
+                  value:
+                    errors:
+                      title: "error_get_address"
+                      message: "error get address"
+                ErrorProductRepository:
+                  summary: error product repository
+                  value:
+                    errors:
+                      title: "error_product_repository"
+                      message: "cannot get products by SKUs from repository"
+                ErrorCouponPaymentValidate:
+                  summary: error coupon payment validate
+                  value:
+                    errors:
+                      title: "error_coupon_payment_validate"
+                      message: "error coupon payment validate"
+                ErrorPromotionPartnershipValidate:
+                  summary: error promotion partnership validate
+                  value:
+                    errors:
+                      title: "error_promotion_partnership_validate"
+                      message: "error promotion partnership validate"
+                ErrorIppAssignment:
+                  summary: error ipp assignment
+                  value:
+                    errors:
+                      title: "error_ipp_assignment"
+                      message: "error ipp assignment"
+                ErrorCreateOrder:
+                  summary: error create order
+                  value:
+                    errors:
+                      title: "error_create_order"
+                      message: "error create order"
+                CreateOrderUnsuccessful:
+                  summary: create order unsuccessful
+                  value:
+                    errors:
+                      title: "create_order_unsuccessful"
+                      message: "create order unsuccessful"
+  /v1/admin/orders:    
+    post:
+      summary: Admin Create order
+      tags:
+      - Admin Order
+      parameters:
+      - description: x-nocnoc-platform
+        in: header
+        name: x-nocnoc-platform
+        schema:
+          type: string
+      - description: x-nocnoc-device-os
+        in: header
+        name: x-nocnoc-device-os
+        schema:
+          type: string
+      - description: Not Required when x-nocnoc-platform is web
+        in: header
+        name: x-nocnoc-cookie-id
+        schema:
+          type: string
+      - description: Not Required when x-nocnoc-platform is web
+        in: header
+        name: x-nocnoc-session-id
+        schema:
+          type: string
+      - description: x-nocnoc-device-id
+        in: header
+        name: x-nocnoc-device-id
+        schema:
+          type: string
+      - description: x-nocnoc-id
+        in: header
+        name: x-nocnoc-id
+        schema:
+          type: string
+      - description: accept-language
+        in: header
+        name: accept-language
+        schema:
+          type: string
+      requestBody:
+        description: create order request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/adminCreateOrderRequest'
+        required: true
+      responses:
+        '201':
+          description: Created operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createOrderResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/errorResponse'
+              examples:
+                ErrorUnmarshal:
+                  summary: error unmarshal
+                  value:
+                    errors:
+                      title: "error_unmarshal"
+                      message: "cannot unmarshal data"
+                ErrorDecode64:
+                  summary: error decode64
+                  value:
+                    errors:
+                      title: "error_decode64"
+                      message: "decode64 data error"
+                InvalidSignature:
+                  summary: invalid signature
+                  value:
+                    errors:
+                      title: "invalid_signature"
+                      message: "invalid signature"
+                NotfoundAddress:
+                  summary: not found address
+                  value:
+                    errors:
+                      title: "notfound_address"
+                      message: "not found address"
+                NotfoundProduct:
+                  summary: not found product
+                  value:
+                    errors:
+                      title: "notfound_product"
+                      message: "not found product"
+                InvalidAllShipping:
+                  summary: invalid all shipping
+                  value:
+                    errors:
+                      title: "invalid_all_shipping"
+                      message: "all shipping not available"
+                InvalidSomeShipping:
+                  summary: invalid some shipping
+                  value:
+                    errors:
+                      title: "invalid_some_shipping"
+                      message: "some shipping not available"
+                OutOfStockProduct:
+                  summary: out of stock product
+                  value:
+                    errors:
+                      title: "out_of_stock_product"
+                      message: "product out of stock"
+                InvalidSelectedDelivery:
+                  summary: invalid selected delivery
+                  value:
+                    errors:
+                      title: "invalid_selected_delivery"
+                      message: "invalid selected delivery"
+                InvalidShippingCost:
+                  summary: invalid shipping cost
+                  value:
+                    errors:
+                      title: "invalid_shipping_cost"
+                      message: "invalid shipping cost"
+                InvalidPrice:
+                  summary: invalid price
+                  value:
+                    errors:
+                      title: "invalid_price"
+                      message: "invalid price"
+                InvalidPlatformPartnerCoupon:
+                  summary: invalid platform partner coupon
+                  value:
+                    errors:
+                      title: "invalid_platform_partner_coupon"
+                      message: "invalid platform partner coupon"
+                InvalidShopCoupon:
+                  summary: invalid shop coupon
+                  value:
+                    errors:
+                      title: "invalid_shop_coupon"
+                      message: "invalid shop coupon"
+                InvalidPoint:
+                  summary: invalid point
+                  value:
+                    errors:
+                      title: "invalid_point"
+                      message: "invalid point"
+                InvalidSummary:
+                  summary: invalid summary
+                  value:
+                    errors:
+                      title: "invalid_summary"
+                      message: "invalid summary"
+                InvalidCouponPayment:
+                  summary: invalid coupon payment
+                  value:
+                    errors:
+                      title: "invalid_coupon_payment"
+                      message: "invalid coupon payment"
+                InvalidIpp:
+                  summary: invalid ipp
+                  value:
+                    errors:
+                      title: "invalid_ipp"
+                      message: "invalid ipp"
+                InvalidIppPromotion:
+                  summary: invalid ipp promotion
+                  value:
+                    errors:
+                      title: "invalid_ipp_promotion"
+                      message: "invalid ipp promotion"
+                ErrorGetUserInfo:
+                  summary: error get user info
+                  value:
+                    errors:
+                      title: "error_get_user_info"
+                      message: "error get user info"
+                NotfoundUserInfo:
+                  summary: not found user info
+                  value:
+                    errors:
+                      title: "notfound_user_info"
+                      message: "not found user info"
+        '401':
+          description: Unauthorize
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/errorResponse'
+              examples:
+                ErrorGetPromotionDetail:
+                  summary: error get promotion detail
+                  value:
+                    errors:
+                      title: "error_get_promotion_detail"
+                      message: "error get promotion detail"
+                ErrorBreakdownSaleOrder:
+                  summary: error breakdown sale order
+                  value:
+                    errors:
+                      title: "error_breakdown_sale_order"
+                      message: "error breakdown sale order"
+                ErrorGetNoncnocDiscountPoint:
+                  summary: error get noncnoc discount point
+                  value:
+                    errors:
+                      title: "error_get_noncnoc_discount_point"
+                      message: "error get noncnoc discount point"
+                ErrorGetAddress:
+                  summary: error get address
+                  value:
+                    errors:
+                      title: "error_get_address"
+                      message: "error get address"
+                ErrorProductRepository:
+                  summary: error product repository
+                  value:
+                    errors:
+                      title: "error_product_repository"
+                      message: "cannot get products by SKUs from repository"
+                ErrorCouponPaymentValidate:
+                  summary: error coupon payment validate
+                  value:
+                    errors:
+                      title: "error_coupon_payment_validate"
+                      message: "error coupon payment validate"
+                ErrorPromotionPartnershipValidate:
+                  summary: error promotion partnership validate
+                  value:
+                    errors:
+                      title: "error_promotion_partnership_validate"
+                      message: "error promotion partnership validate"
+                ErrorIppAssignment:
+                  summary: error ipp assignment
+                  value:
+                    errors:
+                      title: "error_ipp_assignment"
+                      message: "error ipp assignment"
+                ErrorCreateOrder:
+                  summary: error create order
+                  value:
+                    errors:
+                      title: "error_create_order"
+                      message: "error create order"
+                CreateOrderUnsuccessful:
+                  summary: create order unsuccessful
+                  value:
+                    errors:
+                      title: "create_order_unsuccessful"
+                      message: "create order unsuccessful"
 components:
   schemas:
     baseQuotationRequest:
@@ -528,8 +1178,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/cartProductBundleModel'
-                    
-          
     cartProductBundleModel:
         type: object
         required: ['id', 'skuNumber', 'selected', 'parentId', 'price', 'minimumQuantity', 'quantity', 'stock']
@@ -713,29 +1361,6 @@ components:
               type: array
               items:
                  $ref: '#/components/schemas/invalidProducts'
-
-    ErrorResponseModel:
-      type: object
-      properties:
-        errors:
-          type: array
-          items:
-            type: object
-            $ref: '#/components/schemas/ErrorDetail'
-    ErrorDetail:
-      type: object
-      required:
-        - title
-        - detail
-      properties:
-        title:
-          type: string
-          format: string
-          example: title
-        detail:
-          type: string
-          format: string
-          example: detail
     QuotationDetail:
       type: object
       required:
@@ -1130,7 +1755,310 @@ components:
             example: Air Conditioners
         subSubCategory:
             type: string
-            example: Air Conditioner  
+            example: Air Conditioner
+    quotationSummaryRequest:
+      type: object
+      required:
+        - quotationSignature
+        - quotationData
+        - sellers
+      properties:
+        quotationSignature:
+          type: string
+          example: <hmac>
+        quotationData:
+          type: string
+          example: <base64>
+        couponCodes:
+          type: array
+          items: 
+            type: string
+          example: [""]
+        sellers:
+          type: array
+          items:
+            type: object
+            required:
+            - id
+            - saleOrders
+            properties:
+              id:
+                type: number
+              saleOrders:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - saleOrderRef
+                  - defaultDeliveryOption
+                  properties:
+                    saleOrderRef:
+                      type: string
+                    defaultDeliveryOption:
+                      type: object
+                      required:
+                        - carrierId
+                      properties:
+                        carrierId:
+                          type: number
+                          example: 12
+        useNocnocPoint:
+          type: boolean
+          example: true
+        # payment:
+        #   type: object
+        #   description: waiting confirm with platform team
+        #   properties:
+        #     paymentType:
+        #       type: string
+        #       example: ""
+        #     cardData:
+        #       type: object
+        #       example: {}
+        #     bankCode:
+        #       type: string
+        #       example: ""
+    quotationSummaryResponse:
+      type: object
+      required: ["data"]
+      properties:
+        data:
+          type: object
+          required: ["appliedPromotions", "totalPrice", "totalDiscount", "totalPriceAfterDiscount", "totalShippingFee", "totalShippingFeeAfterDiscount", "grandTotalDiscount", "grandTotal"]
+          properties:
+            quotationData:
+              type: string
+              example: "<base64>"
+            quotationSignature:
+              type: string
+              example: "<hmac>"
+            coupons:
+              type: array
+              items:
+                properties:
+                  promotionId: 
+                    type: number
+                    example: 12345678
+                  couponCode:
+                    type: string
+                    example: "NN1234"
+                  limitApplies:
+                    type: number
+                    example: 1
+                  type:
+                    type: string
+                    example: "NOCNOC_COUPON"
+                  status:
+                    type: string
+                    enum: [VALID, NOTFOUND, ORDER_VALUE_NOT_REACH_MINIMUM]
+                    example: "VALID"
+            nocnocPoint:
+              type: object
+              properties:
+                availablePoint:
+                  type: number
+                  example: 0
+                isNocNocClubMember:
+                  type: boolean
+                  example: true
+                pointBalance:
+                  type: number
+                  example: 0
+                pointValue:
+                  type: number
+                  example: 0
+            totalPrice:
+              type: number
+              example: 56300
+            totalShopCouponDiscount:
+              type: number
+              example: 350
+            totalPlatformDiscount:
+              type: number
+              example: 5630
+              description: "total discount from platform coupon (depreciated, use totalPlatformCouponDiscount instead)"
+            totalPlatformCouponDiscount:
+              type: number
+              example: 5630
+              description: "total discount from platform coupon"
+            totalPartnerCouponDiscount:
+              type: number
+              example: 0
+            totalVoucherDiscount:
+              type: number
+              example: 1000
+            totalDiscount:
+              type: number
+              example: 6980
+            totalNocnocPointDiscount:
+              type: number
+              example: 40
+            totalPriceAfterDiscount:
+              type: number
+              example: 50320
+            totalShippingFee:
+              type: number
+              example: 1770
+            totalSellerShippingDiscount:
+              type: number
+              example: 10
+            totalPlatformShippingDiscount:
+              type: number
+              example: 270
+            totalShippingFeeAfterDiscount:
+              type: number
+              example: 280
+            grandTotalDiscount:
+              type: number
+              example: 7300
+            grandTotal:
+              type: number
+              example: 50770
+            currency:
+              type: string
+              example: ฿  
+    createOrderRequest:
+      type: object
+      required: ["quotationSignature", "quotationData", "payment"]
+      properties:
+        quotationSignature:
+          type: string
+          example: <hmac>
+        quotationData:
+          type: string
+          example: <base64>
+        isSmsEnabled:
+          type: boolean
+        isTaxRequired:
+          type: boolean
+        payment:
+          type: object
+          $ref: '#/components/schemas/payment'
+        taxAddress:
+          type: object
+          $ref: '#/components/schemas/taxAddress'
+        integrationParams:
+          type: object
+          $ref: '#/components/schemas/integrationParams'
+    payment:
+      required: ["paymentType", "currency"]
+      type: object
+      properties:
+        cardId:
+          type: string
+        cardNumber:
+          type: string
+        currency:
+          type: string
+        ippTerm:
+          type: integer
+        paymentType:
+          type: string
+          example: "CARD | IPP | QR" 
+        redirectUrl:
+          type: string
+    taxAddress:
+      type: object
+      properties:
+        addressLine1:
+          type: string
+        addressLine2:
+          type: string
+        branchCode:
+          type: string
+        districtName:
+          type: string
+        fullName:
+          type: string
+        phoneNo:
+          type: string
+        province:
+          type: string
+        subDistrictName:
+          type: string
+        taxId:
+          type: string
+        taxType:
+          type: string
+        zipCode:
+          type: string
+    integrationParams:
+      type: object
+      properties:
+        fallback:
+          type: string
+        refId:
+          type: string
+        sourceTime:
+          type: integer
+        utmContent:
+          type: string
+        utmMedium:
+          type: string
+        utmSource:
+          type: string
+        utmTerm:
+          type: string
+    createOrderResponse:
+      type: object
+      required: ["data"]
+      properties:
+        data:
+          type: object
+          $ref: '#/components/schemas/order'
+    order:
+      type: object
+      properties:
+        authorizeUrl:
+          type: string
+        expireAt:
+          type: string
+        msg:
+          type: string
+        orderNo:
+          type: string
+        orderStatus:
+          type: string
+        paymentType:
+          type: string
+        scannableCode:
+          type: string
+        transactionId:
+          type: string
+    adminCreateOrderRequest:
+      type: object
+      required: ["quotationSignature", "quotationData", "payment", "buyer"]
+      properties:
+        quotationSignature:
+          type: string
+          example: <hmac>
+        quotationData:
+          type: string
+          example: <base64>
+        isSmsEnabled:
+          type: boolean
+        isTaxRequired:
+          type: boolean
+        payment:
+          type: object
+          $ref: '#/components/schemas/payment'
+        taxAddress:
+          type: object
+          $ref: '#/components/schemas/taxAddress'
+        buyer:
+          type: object
+          required:
+            - userId
+          properties:
+            userId:
+              type: integer
+              example: 10001
+            email:
+              type: string
+              example: buyer@email.com
+            phone:
+              type: string
+              example: 0812345678
   securitySchemes:
     bearer:
       type: http
