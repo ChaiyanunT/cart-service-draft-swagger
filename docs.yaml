@@ -2027,7 +2027,7 @@ components:
           type: string
     adminCreateOrderRequest:
       type: object
-      required: ["quotationSignature", "quotationData", "payment", "buyer"]
+      required: ["quotationSignature", "quotationData", "payment", "buyerEmail"]
       properties:
         quotationSignature:
           type: string
@@ -2045,20 +2045,9 @@ components:
         taxAddress:
           type: object
           $ref: '#/components/schemas/taxAddress'
-        buyer:
-          type: object
-          required:
-            - userId
-          properties:
-            userId:
-              type: integer
-              example: 10001
-            email:
-              type: string
-              example: buyer@email.com
-            phone:
-              type: string
-              example: 0812345678
+        buyerEmail:
+          type: string
+          example: buyer@email.com
   securitySchemes:
     bearer:
       type: http
