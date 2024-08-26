@@ -8,35 +8,90 @@ externalDocs:
 servers:
   - url: "https://proxy.qa.nocnoc-internal.com/cart-service"
 paths:
-  /v1/user/quotation/promotion/validation:
-    post:
-      summary: Validate list of coupon code with quotation data
+  /v1/user/cart:
+  # TODO add create/update/delete cart
+    get:
+      summary: Get Cart
       tags:
-        - Quotation
+        - Cart
       parameters:
-       - name: x-nocnoc-platform
-         in: header
-         schema:
-          type: string
-       - name: x-nocnoc-device-os
-         in: header
-         schema:
-          type: string
-       - name: x-cookie-id
-         in: header
-         schema:
-          type: string
-       - name: x-session-id
-         in: header
-         schema: 
-          type: string
+        - name: x-nocnoc-platform
+          in: header
+          description: app / web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          description: android, ios, desktop, tablet, mobile
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-cookie-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-session-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-device-id
+          in: header
+          description: Required in guest mode
+          required: false
+          schema:
+            type: string
+        - name: Accept-Language
+          in: header
+          description: Not Required But Default value en
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/cartReponseModel"
+
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+
+        "401":
+          description: Unauthorize
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+  /v1/user/cart/summary:
+    post:
+      summary: get cart summary data
+      tags:
+        - Cart
+      parameters:
        - name: x-nocnoc-device-id
          in: header
          description: device id generate from FE
-         schema:
-          type: string
-       - name: x-request-id
-         in: header
          schema:
           type: string
        - name: x-nocnoc-id
@@ -49,14 +104,329 @@ paths:
         content:
           'application/json':
             schema:
-              $ref: '#/components/schemas/promotionRequest'
+              type: object
+              properties:
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/quotationPromotionValidationResponse'
+                type: object
+                required: ['data', 'meta']
+                properties:
+                  data:
+                    type: object
+                    required: ['totalPrice', 'grandTotal']
+                    properties:
+                      coupons:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - limitApplies
+                            - type
+                            - status
+                            - promotionId
+                          properties:
+                            promotionId:
+                              type: number
+                              example: 1234
+                            couponCode:
+                              type: string
+                              example: NN1234
+                            limitApplies:
+                              type: number
+                              example: 1
+                            type:
+                              type: string
+                              example: seller
+                              enum:
+                                - seller
+                                - platform
+                                - voucher
+                                - partner
+                            status:
+                              type: string
+                              example: VALID
+                              description: waiting confirm enum with promotion
+                              enum:
+                                - VALID
+                                - NOTFOUND
+                                - ORDER_VALUE_NOT_REACH_MINIMUM
+                            message:
+                              type: string
+                              example: รหัสไม่ถูกต้อง
+                        
+                      totalPrice: 
+                        type: number
+                        format: double
+                        example: 56300.0
+                      totalShopCouponDiscount:
+                        type: number
+                        format: double
+                        example: 350
+                      totalPlatformDiscount:
+                        type: number
+                        format: double
+                        example: 5630.0
+                      totalPartnerCouponDiscount:
+                        type: number
+                        description: future discount
+                        format: double
+                        example: 500.5
+                      totalDiscount:
+                        type: number
+                        format: double
+                        example: 6980
+                      totalPriceAfterDiscount:
+                        type: number
+                        format: double
+                        example: 50320
+                      grandTotalDiscount:
+                        type: number
+                        format: double
+                        example: 7300
+                      grandTotal:
+                        type: number
+                        format: double
+                        example: 35000.6
+                      currency:
+                        type: string
+                        example: ฿
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+          
+        '401':
+          description: Unauthorize
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v1/promotions/best-coupon:
+    post:
+      summary: Get Compatible Promotions (Cart)
+      tags:
+        - Cart Promotion
+      parameters:
+        - name: x-nocnoc-device-id
+          in: header
+          description: device id generate from FE
+          schema:
+            type: string
+        - name: Accept-Language
+          in: header
+          description: not required and default to en
+          schema:
+            type: string
+        - name: x-nocnoc-id
+          in: header
+          required: true
+          description: nocnoc-id decrypt by local authorizer
+          schema:
+            type: string
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      totalAppliedCount:
+                        type: number
+                        example: 3
+                  data:
+                    type: object
+                    properties:
+                      coupons:
+                        type: array
+                        items:
+                          type: object
+                          required: ["key", "limitApplies"]
+                          properties:
+                            key:
+                              type: string
+                              example: "seller"
+                              enum:
+                                - seller
+                                - platform
+                                - partner
+                                - voucher
+                            limitApplies:
+                              type: integer
+                              example: 1
+                            items:
+                              type: array
+                              items:
+                                type: object
+                                required:
+                                  [
+                                    "id",
+                                    "title",
+                                    "selected",
+                                    "discount",
+                                    "discountType",
+                                    "startedAt",
+                                    "endedAt",
+                                  ]
+                                properties:
+                                  id:
+                                    type: number
+                                    example: 1245
+                                  title:
+                                    type: string
+                                    example: summer sale
+                                  couponCode:
+                                    type: string
+                                    example: "NN-12345"
+                                  maxAllowedDiscount:
+                                    type: number
+                                    example: 5000
+                                  discount:
+                                    type: number
+                                    format: double
+                                    example: 5
+                                  discountType:
+                                    type: string
+                                    example: PERCENT
+                                    enum:
+                                      - PERCENT
+                                      - FLAT
+                                  condition:
+                                    type: string
+                                    description: "TBC locale logic should in bff or be"
+                                    example: "เมื่อช้อปครบ ฿3,000, ลดสูงสุด ฿1,500"
+                                  description:
+                                    type: string
+                                    example: "คูปองนี้มีจำนวนจำกัด"
+                                    description: field promotionDetails จาก promotion-service
+                                  imageUrl:
+                                    type: string
+                                    example: "http://nocnoc.com"
+                                  selected:
+                                    type: boolean
+                                    example: true
+                                  startedAt:
+                                    type: string
+                                    example: "2024-04-01T12:00:00Z"
+                                  endedAt:
+                                    type: string
+                                    example: "2024-04-01T12:00:00Z"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+
+        "401":
+          description: Unauthorize
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+  /v1/promotions/validation:
+    post:
+      tags:
+       - Cart Promotion
+      summary: Validate list of Promotions (Cart)
+      parameters:
+       - name: x-nocnoc-device-id
+         in: header
+         description: device id generate from FE
+         schema:
+          type: string
+       - name: x-nocnoc-id
+         in: header
+         required: true
+         description: nocnoc-id decrypt by local authorizer
+         schema:
+          type: string
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
+                paymentMethod:
+                  type: object
+                  description: TBD with platform about response from payment-ui
+                  properties:
+                    maskedCard:
+                      type: string
+                      example: 1234-56XX-XXXX-1234
+                    isInstallment:
+                      type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      totalAppliedCount:
+                        type: number
+                        example: 3
+                  data:
+                    type: object
+                    required: ["coupons"]
+                    properties:
+                      coupons:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/coupons'
         '400':
           description: Bad Request
           content:
@@ -83,7 +453,7 @@ paths:
       tags:
         - Quotation
       summary: Create Quotation
-      description: ''
+      description: ""
       operationId: Create Quotation
       parameters:
         - name: x-nocnoc-platform
@@ -103,39 +473,292 @@ paths:
           description: Required when x-nocnoc-platform is web
           required: false
           schema:
-            type: string 
+            type: string
         - name: x-nocnoc-session-id
           in: header
           description: Required when x-nocnoc-platform is web
           required: false
           schema:
-            type: string 
+            type: string
         - name: Accept-Language
           in: header
           description: Not Required But Default value en
           required: false
           schema:
-            type: string 
+            type: string
       requestBody:
         content:
           application/json:
             schema:
-               $ref: '#/components/schemas/CreateQuotationRequest'
+              required:
+                - sellers
+                - addressId
+              type: object
+              properties:
+                addressId:
+                  type: integer
+                  example: 1
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
+                    example: "1234"
+                sellers:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - sellerId
+                      - products
+                      - couponCodes
+                    properties:
+                      sellerId:
+                        type: string
+                        example: 123
+                      products:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - skuNumber
+                            - quantity
+                          properties:
+                            skuNumber:
+                              type: string
+                              example: "123456"
+                            title:
+                              type: string
+                              example: "tv 42 inch"
+                            quantity:
+                              type: integer
+                              example: 10
       responses:
-        '200':
+        "200":
           description: products with delivery options
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateQuotationResponse'
+                $ref: "#/components/schemas/baseQuotationResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+    put:
+      tags:
+        - Quotation
+      summary: Update Quotation
+      description: ""
+      operationId: Update Quotation
+      parameters:
+        - name: x-nocnoc-platform
+          in: header
+          description: app / web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          description: android, ios, desktop, tablet, mobile
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-cookie-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-session-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: Accept-Language
+          in: header
+          description: Not Required But Default value en
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - quotationSignature
+                - quotationData
+              properties:
+                quotationSignature:
+                  type: string
+                  example: hmac
+                quotationData:
+                  type: string
+                  example: base64
+                addressId:
+                  type: number
+                  example: 11150
+                sellers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 0
+                      saleOrders:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            defaultDeliveryOption:
+                              type: object
+                              properties:
+                                carrierId:
+                                  type: integer
+                                  example: 0
+                            saleOrderRef:
+                              type: string
+                              example: "string"
+                invalidProducts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      skuNumber:
+                        type: string
+                        example: 123
+                      quantity:
+                        type: number
+                        example: 5
+                      sellerId:
+                        type: number
+                        example: 1234
+                        required:
+                          - skuNumber
+                          - quantity
+                          - sellerId
+      responses:
+        "200":
+          description: products with delivery options
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/baseQuotationResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+  /v1/user/quotations/promotions/best-coupon:
+    post:
+      summary: Get Compatible Promotions of quotation
+      tags:
+        - Quotation Promotion
+      parameters:
+       - name: x-nocnoc-device-id
+         in: header
+         description: device id generate from FE
+         schema:
+          type: string
+       - name: Accept-Language
+         in: header
+         description: not required and default to en
+         schema:
+          type: string
+       - name: x-nocnoc-id
+         in: header
+         required: true
+         description: nocnoc-id decrypt by local authorizer
+         schema:
+          type: string
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              type: object
+              required:
+                - quotationSignature
+                - quotationData
+              properties:
+                quotationSignature:
+                    type: string
+                    example: hmac
+                quotationData:
+                    type: string
+                    example: BASE64
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      totalAppliedCount:
+                        type: number
+                        example: 3
+                  data:
+                    type: object
+                    properties:
+                      coupons:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/coupons'
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/errorResponse'
+          
         '401':
-          description: Unauthorized
+          description: Unauthorize
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
         '403':
           description: Forbidden
           content:
@@ -148,12 +771,97 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/errorResponse'
-    put:
+  /v1/user/quotation/promotion/validation:
+    post:
+      summary: Validate list of coupon code with quotation data
       tags:
-        - Quotation
-      summary: Update Quotation
-      description: ''
-      operationId: Update Quotation
+        - Quotation Promotion
+      parameters:
+        - name: x-nocnoc-platform
+          in: header
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          schema:
+            type: string
+        - name: x-cookie-id
+          in: header
+          schema:
+            type: string
+        - name: x-session-id
+          in: header
+          schema:
+            type: string
+        - name: x-nocnoc-device-id
+          in: header
+          description: device id generate from FE
+          schema:
+            type: string
+        - name: x-request-id
+          in: header
+          schema:
+            type: string
+        - name: x-nocnoc-id
+          in: header
+          required: true
+          description: nocnoc-id decrypt by local authorizer
+          schema:
+            type: string
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/baseQuotationRequest"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      totalAppliedCount:
+                        type: number
+                        example: 3
+                  data:
+                    type: object
+                    required: ["coupons"]
+                    properties:
+                      coupons:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/coupons"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+
+        "401":
+          description: Unauthorize
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+  /v1/user/quotation/ipp/validation:
+    post:
+      tags:
+        - Quotation Promotion
+      summary: Validate IPP Promotion
       parameters:
         - name: x-nocnoc-platform
           in: header
@@ -185,19 +893,61 @@ paths:
           required: false
           schema:
             type: string 
+        - name: Authorization
+          in: header
+          description: Token From Login
+          required: true
+          schema:
+            type: string
       requestBody:
-        required: true 
         content:
           application/json:
             schema:
-               $ref: '#/components/schemas/UpdateQuotationRequest'
+              type: object
+              required:
+                - quotationSignature
+                - quotationData
+              properties:
+                quotationSignature:
+                  type: string
+                  example: hmac
+                quotationData:
+                  type: string
+                  example: BASE64
+                couponCodes:
+                  type: array
+                  items: 
+                    type: string
+                  example: [""]
+                useNocnocPoint:
+                  type: boolean
+                  example: true
       responses:
         '200':
-          description: products with delivery options
+          description: validate coupon and credit card
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateQuotationResponse'
+                type: object
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - canInstallment
+                    properties:
+                      quotationSignature:
+                        type: string
+                        example: hmac
+                      quotationData:
+                        type: string
+                        example: BASE64
+                      canInstallment:
+                        type: boolean
+                        example: true
+                      ippDescriptions:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ippDescription"
         '400':
           description: Bad Request
           content:
@@ -223,24 +973,24 @@ paths:
       tags:
         - Quotation
       parameters:
-       - name: x-nocnoc-id
-         in: header
-         required: true
-         description: nocnoc-id decrypt by local authorizer
-         schema:
-          type: string
-       - name: Accept-Language
-         in: header
-         description: not required and default to en
-         schema:
-          type: string
-       - name: x-nocnoc-platform
-         in: header
-         required: false
-         description: nocnoc-platform (when = "app" will get loyalty point)
-         schema:
-          type: string
-         example: "web"
+        - name: x-nocnoc-id
+          in: header
+          required: true
+          description: nocnoc-id decrypt by local authorizer
+          schema:
+            type: string
+        - name: Accept-Language
+          in: header
+          description: not required and default to en
+          schema:
+            type: string
+        - name: x-nocnoc-platform
+          in: header
+          required: false
+          description: nocnoc-platform (when = "app" will get loyalty point)
+          schema:
+            type: string
+          example: "web"
       summary: Calculate price and discount
       description: Calculate price and discount for both product and shipping
       operationId: quotationSummary
@@ -249,22 +999,189 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/quotationSummaryRequest'
-        required: true
+              type: object
+              required:
+                - quotationSignature
+                - quotationData
+                - sellers
+              properties:
+                quotationSignature:
+                  type: string
+                  example: <hmac>
+                quotationData:
+                  type: string
+                  example: <base64>
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
+                  example: [""]
+                sellers:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - id
+                      - saleOrders
+                    properties:
+                      id:
+                        type: number
+                      saleOrders:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - saleOrderRef
+                            - defaultDeliveryOption
+                          properties:
+                            saleOrderRef:
+                              type: string
+                            defaultDeliveryOption:
+                              type: object
+                              required:
+                                - carrierId
+                              properties:
+                                carrierId:
+                                  type: number
+                                  example: 12
+                useNocnocPoint:
+                  type: boolean
+                  example: true
+                # payment:
+                #   type: object
+                #   description: waiting confirm with platform team
+                #   properties:
+                #     paymentType:
+                #       type: string
+                #       example: ""
+                #     cardData:
+                #       type: object
+                #       example: {}
+                #     bankCode:
+                #       type: string
+                #       example: ""
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/quotationSummaryResponse'
-        '400':
+                type: object
+                required: ["data"]
+                properties:
+                  data:
+                    type: object
+                    required:
+                      [
+                        "appliedPromotions",
+                        "totalPrice",
+                        "totalDiscount",
+                        "totalPriceAfterDiscount",
+                        "totalShippingFee",
+                        "totalShippingFeeAfterDiscount",
+                        "grandTotalDiscount",
+                        "grandTotal",
+                      ]
+                    properties:
+                      quotationData:
+                        type: string
+                        example: "<base64>"
+                      quotationSignature:
+                        type: string
+                        example: "<hmac>"
+                      coupons:
+                        type: array
+                        items:
+                          properties:
+                            promotionId:
+                              type: number
+                              example: 12345678
+                            couponCode:
+                              type: string
+                              example: "NN1234"
+                            limitApplies:
+                              type: number
+                              example: 1
+                            type:
+                              type: string
+                              example: "NOCNOC_COUPON"
+                            status:
+                              type: string
+                              enum:
+                                [VALID, NOTFOUND, ORDER_VALUE_NOT_REACH_MINIMUM]
+                              example: "VALID"
+                      nocnocPoint:
+                        type: object
+                        properties:
+                          availablePoint:
+                            type: number
+                            example: 0
+                          isNocNocClubMember:
+                            type: boolean
+                            example: true
+                          pointBalance:
+                            type: number
+                            example: 0
+                          pointValue:
+                            type: number
+                            example: 0
+                      totalPrice:
+                        type: number
+                        example: 56300
+                      totalShopCouponDiscount:
+                        type: number
+                        example: 350
+                      totalPlatformDiscount:
+                        type: number
+                        example: 5630
+                        description: "total discount from platform coupon (depreciated, use totalPlatformCouponDiscount instead)"
+                      totalPlatformCouponDiscount:
+                        type: number
+                        example: 5630
+                        description: "total discount from platform coupon"
+                      totalPartnerCouponDiscount:
+                        type: number
+                        example: 0
+                      totalVoucherDiscount:
+                        type: number
+                        example: 1000
+                      totalDiscount:
+                        type: number
+                        example: 6980
+                      totalNocnocPointDiscount:
+                        type: number
+                        example: 40
+                      totalPriceAfterDiscount:
+                        type: number
+                        example: 50320
+                      totalShippingFee:
+                        type: number
+                        example: 1770
+                      totalSellerShippingDiscount:
+                        type: number
+                        example: 10
+                      totalPlatformShippingDiscount:
+                        type: number
+                        example: 270
+                      totalShippingFeeAfterDiscount:
+                        type: number
+                        example: 280
+                      grandTotalDiscount:
+                        type: number
+                        example: 7300
+                      grandTotal:
+                        type: number
+                        example: 50770
+                      currency:
+                        type: string
+                        example: ฿
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/errorResponse'
+                  - $ref: "#/components/schemas/errorResponse"
               examples:
                 InvalidParameter:
                   summary: invalid parameter
@@ -290,59 +1207,59 @@ paths:
                     errors:
                       title: "invalid_quotation_data"
                       message: "Cannot decode quotationData, plase check request body"
-        '401':
+        "401":
           description: Unauthorize
-        '404':
+        "404":
           description: Not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/errorResponse'
-        '403':
+                $ref: "#/components/schemas/errorResponse"
+        "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/errorResponse'
-        '500':
+                $ref: "#/components/schemas/errorResponse"
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/errorResponse'
+                  - $ref: "#/components/schemas/errorResponse"
               examples:
                 ExternalServerError:
                   summary: Internal server error
-                  value:  
+                  value:
                     errors:
                       title: "internal_server_error"
                       message: "Something wrong, or {{some error message}}"
                 UnknownPromotionBusinessType:
                   summary: Unknown promotion business type
-                  value:  
+                  value:
                     errors:
                       title: "unknown_promotion_business_type"
                       message: "Unknown promotion business type"
-        '502':
+        "502":
           description: External Server Error
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/errorResponse'
+                  - $ref: "#/components/schemas/errorResponse"
               examples:
                 ExternalServerError:
                   summary: External server error
-                  value:  
+                  value:
                     errors:
                       title: "external_server_error"
                       message: "[Promotion] Get seller promotion sku pricing has error"
-  /v1/user/cart:
-    get:
-      summary: Get Cart
+  /v1/admin/quotation:
+    post:
       tags:
-        - Cart
+        - Admin Quotation
+      summary: for admin create Quotation on behalf of user
       parameters:
         - name: x-nocnoc-platform
           in: header
@@ -361,119 +1278,891 @@ paths:
           description: Required when x-nocnoc-platform is web
           required: false
           schema:
-            type: string 
-        - name: x-nocnoc-session-id
-          in: header
-          description: Required when x-nocnoc-platform is web
-          required: false
-          schema:
-            type: string 
-        - name: x-nocnoc-device-id
-          in: header
-          description: Required in guest mode
-          required: false
-          schema:
-            type: string 
+            type: string
         - name: Accept-Language
           in: header
           description: Not Required But Default value en
           required: false
           schema:
-            type: string 
+            type: string
+        - name: x-nocnoc-id
+          in: header
+          required: true
+          description: nocnoc-id decrypt by local authorizer
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - sellers
+                - addressId
+                - buyerEmail
+              type: object
+              properties:
+                addressId:
+                  type: integer
+                  example: 1
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
+                    example: "1234"
+                sellers:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - sellerId
+                      - products
+                      - couponCodes
+                    properties:
+                      sellerId:
+                        type: string
+                        example: 123
+                      products:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - skuNumber
+                            - quantity
+                          properties:
+                            skuNumber:
+                              type: string
+                              example: "123456"
+                            title:
+                              type: string
+                              example: "tv 42 inch"
+                            quantity:
+                              type: integer
+                              example: 10
+                buyerEmail:
+                  type: string
+                  example: buyer@email.com
       responses:
-        '200':
-          description: Successful operation
+        "200":
+          description: Admin Create Quotation Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/baseQuotationResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+    put:
+      tags:
+        - Admin Quotation
+      summary: Admin use for update quotation data on behalf of user
+      parameters:
+        - name: x-nocnoc-platform
+          in: header
+          description: app / web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          description: android, ios, desktop, tablet, mobile
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-cookie-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: Accept-Language
+          in: header
+          description: Not Required But Default value en
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-id
+          in: header
+          required: true
+          description: nocnoc-id decrypt by local authorizer
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - quotationSignature
+                - quotationData
+              properties:
+                quotationSignature:
+                  type: string
+                  example: hmac
+                quotationData:
+                  type: string
+                  example: base64
+                addressId:
+                  type: number
+                  example: 11150
+                sellers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 0
+                      saleOrders:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            defaultDeliveryOption:
+                              type: object
+                              properties:
+                                carrierId:
+                                  type: integer
+                                  example: 0
+                            saleOrderRef:
+                              type: string
+                              example: "string"
+                invalidProducts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      skuNumber:
+                        type: string
+                        example: 123
+                      quantity:
+                        type: number
+                        example: 5
+                      sellerId:
+                        type: number
+                        example: 1234
+                        required:
+                          - skuNumber
+                          - quantity
+                          - sellerId
+                buyerEmail:
+                  type: string
+                  example: buyer@email.com
+      responses:
+        "200":
+          description: update quotation success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/baseQuotationResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+  /v1/admin/quotation/ipp/validation:
+    post:
+      tags:
+        - Admin Quotation
+      summary: for Validate IPP Validation
+      parameters:
+        - name: x-nocnoc-platform
+          in: header
+          description: app / web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          description: android, ios, desktop, tablet, mobile
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-cookie-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-session-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: Accept-Language
+          in: header
+          description: Not Required But Default value en
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-id
+          in: header
+          required: true
+          description: nocnoc-id decrypt by local authorizer
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - buyerEmail
+                - quotationSignature
+                - quotationData
+              type: object
+              properties:
+                quotationSignature:
+                  type: string
+                  example: hmac
+                quotationData:
+                  type: string
+                  example: BASE64
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
+                  example: [""]
+                useNocnocPoint:
+                  type: boolean
+                  example: true
+                buyerEmail:
+                  type: string
+                  example: buyer@email.com
+      responses:
+        "200":
+          description: Success
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   data:
-                    $ref: '#/components/schemas/cartReponseModel'
-          
-        '400':
+                    type: object
+                    required:
+                      - canInstallment
+                      - quotationSignature
+                      - quotationData
+                    properties:
+                      quotationSignature:
+                        type: string
+                        example: "<quotationSignature>"
+                      quotationData:
+                        type: string
+                        example: "BASE64"
+                      canInstallment:
+                        type: boolean
+                        example: true
+                      ippDescriptions:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ippDescription"
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/errorResponse'
-          
-        '401':
-          description: Unauthorize
-        '403':
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+        "401":
+          description: Unauthorized
+        "403":
           description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
-        '500':
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/errorResponse'
-  /v1/user/orders:    
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+  /v1/admin/quotation/promotion/best-coupon:
+    post:
+      tags:
+        - Admin Quotation
+      parameters:
+        - name: x-nocnoc-platform
+          in: header
+          description: app / web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          description: android, ios, desktop, tablet, mobile
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-cookie-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-session-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: Accept-Language
+          in: header
+          description: Not Required But Default value en
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-id
+          in: header
+          required: true
+          description: nocnoc-id decrypt by local authorizer
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - buyerEmail
+              allOf:
+                - $ref: "#/components/schemas/baseQuotationRequest"
+              properties:
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
+                buyerEmail:
+                  type: string
+                  example: buyer@email.com
+      responses:
+        "200":
+          description: "success"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      totalAppliedCount:
+                        type: number
+                        example: 3
+                  data:
+                    type: object
+                    required: ["coupons"]
+                    properties:
+                      coupons:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/coupons"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+  /v1/admin/quotation/promotion/validation:
+    post:
+      tags:
+        - Admin Quotation
+      parameters:
+        - name: x-nocnoc-platform
+          in: header
+          description: app / web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          description: android, ios, desktop, tablet, mobile
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-cookie-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-session-id
+          in: header
+          description: Required when x-nocnoc-platform is web
+          required: false
+          schema:
+            type: string
+        - name: Accept-Language
+          in: header
+          description: Not Required But Default value en
+          required: false
+          schema:
+            type: string
+        - name: x-nocnoc-id
+          in: header
+          required: true
+          description: nocnoc-id decrypt by local authorizer
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - buyerEmail
+              allOf:
+                - $ref: "#/components/schemas/baseQuotationRequest"
+              properties:
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
+                buyerEmail:
+                  type: string
+                  example: buyer@email.com
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      totalAppliedCount:
+                        type: number
+                        example: 3
+                  data:
+                    type: object
+                    required: ["coupons"]
+                    properties:
+                      coupons:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/coupons"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+  /v1/admin/quotation/summary:
+    post:
+      tags:
+        - Admin Quotation
+      parameters:
+        - name: x-nocnoc-platform
+          in: header
+          schema:
+            type: string
+        - name: x-nocnoc-device-os
+          in: header
+          schema:
+            type: string
+        - name: x-cookie-id
+          in: header
+          schema:
+            type: string
+        - name: x-session-id
+          in: header
+          schema:
+            type: string
+        - name: x-request-id
+          in: header
+          schema:
+            type: string
+        - name: x-nocnoc-id
+          in: header
+          required: true
+          description: nocnoc-id decrypt by local authorizer
+          schema:
+            type: string
+      requestBody:
+        description: Sum the final quotation
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - quotationSignature
+                - quotationData
+                - sellers
+              properties:
+                quotationSignature:
+                  type: string
+                  example: <hmac>
+                quotationData:
+                  type: string
+                  example: <base64>
+                couponCodes:
+                  type: array
+                  items:
+                    type: string
+                  example: [""]
+                sellers:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - id
+                      - saleOrders
+                    properties:
+                      id:
+                        type: number
+                      saleOrders:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - saleOrderRef
+                            - defaultDeliveryOption
+                          properties:
+                            saleOrderRef:
+                              type: string
+                            defaultDeliveryOption:
+                              type: object
+                              required:
+                                - carrierId
+                              properties:
+                                carrierId:
+                                  type: number
+                                  example: 12
+                useNocnocPoint:
+                  type: boolean
+                  example: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required: ["data"]
+                properties:
+                  data:
+                    type: object
+                    required:
+                      [
+                        "appliedPromotions",
+                        "totalPrice",
+                        "totalDiscount",
+                        "totalPriceAfterDiscount",
+                        "totalShippingFee",
+                        "totalShippingFeeAfterDiscount",
+                        "grandTotalDiscount",
+                        "grandTotal",
+                      ]
+                    properties:
+                      quotationData:
+                        type: string
+                        example: "<base64>"
+                      quotationSignature:
+                        type: string
+                        example: "<hmac>"
+                      coupons:
+                        type: array
+                        items:
+                          properties:
+                            promotionId:
+                              type: number
+                              example: 12345678
+                            couponCode:
+                              type: string
+                              example: "NN1234"
+                            limitApplies:
+                              type: number
+                              example: 1
+                            type:
+                              type: string
+                              example: "NOCNOC_COUPON"
+                            status:
+                              type: string
+                              enum:
+                                [VALID, NOTFOUND, ORDER_VALUE_NOT_REACH_MINIMUM]
+                              example: "VALID"
+                      nocnocPoint:
+                        type: object
+                        properties:
+                          availablePoint:
+                            type: number
+                            example: 0
+                          isNocNocClubMember:
+                            type: boolean
+                            example: true
+                          pointBalance:
+                            type: number
+                            example: 0
+                          pointValue:
+                            type: number
+                            example: 0
+                      totalPrice:
+                        type: number
+                        example: 56300
+                      totalShopCouponDiscount:
+                        type: number
+                        example: 350
+                      totalPlatformDiscount:
+                        type: number
+                        example: 5630
+                        description: "total discount from platform coupon (depreciated, use totalPlatformCouponDiscount instead)"
+                      totalPlatformCouponDiscount:
+                        type: number
+                        example: 5630
+                        description: "total discount from platform coupon"
+                      totalPartnerCouponDiscount:
+                        type: number
+                        example: 0
+                      totalVoucherDiscount:
+                        type: number
+                        example: 1000
+                      totalDiscount:
+                        type: number
+                        example: 6980
+                      totalNocnocPointDiscount:
+                        type: number
+                        example: 40
+                      totalPriceAfterDiscount:
+                        type: number
+                        example: 50320
+                      totalShippingFee:
+                        type: number
+                        example: 1770
+                      totalSellerShippingDiscount:
+                        type: number
+                        example: 10
+                      totalPlatformShippingDiscount:
+                        type: number
+                        example: 270
+                      totalShippingFeeAfterDiscount:
+                        type: number
+                        example: 280
+                      grandTotalDiscount:
+                        type: number
+                        example: 7300
+                      grandTotal:
+                        type: number
+                        example: 50770
+                      currency:
+                        type: string
+                        example: ฿
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+              examples:
+                InvalidParameter:
+                  summary: invalid parameter
+                  value:
+                    errors:
+                      title: "invalid_parameter"
+                      message: "Invalid carrierId, please check request body"
+                InvalidSignature:
+                  summary: invalid signature
+                  value:
+                    errors:
+                      title: "invalid_signature"
+                      message: "Invalid quotationSignature, plase check request body"
+                InvalidDeliveryOption:
+                  summary: invalid delivery option
+                  value:
+                    errors:
+                      title: "invalid_delivery_option"
+                      message: "delivery option not found"
+                InvalidQuotationData:
+                  summary: invalid quotation data
+                  value:
+                    errors:
+                      title: "invalid_quotation_data"
+                      message: "Cannot decode quotationData, plase check request body"
+        "401":
+          description: Unauthorize
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+              examples:
+                ExternalServerError:
+                  summary: Internal server error
+                  value:
+                    errors:
+                      title: "internal_server_error"
+                      message: "Something wrong, or {{some error message}}"
+                UnknownPromotionBusinessType:
+                  summary: Unknown promotion business type
+                  value:
+                    errors:
+                      title: "unknown_promotion_business_type"
+                      message: "Unknown promotion business type"
+        "502":
+          description: External Server Error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/errorResponse"
+              examples:
+                ExternalServerError:
+                  summary: External server error
+                  value:
+                    errors:
+                      title: "external_server_error"
+                      message: "[Promotion] Get seller promotion sku pricing has error"
+  /v1/user/orders:
     post:
       summary: Create order
       tags:
-      - Order
+        - Order
       parameters:
-      - description: x-nocnoc-platform
-        in: header
-        name: x-nocnoc-platform
-        schema:
-          type: string
-      - description: x-nocnoc-device-os
-        in: header
-        name: x-nocnoc-device-os
-        schema:
-          type: string
-      - description: Not Required when x-nocnoc-platform is web
-        in: header
-        name: x-nocnoc-cookie-id
-        schema:
-          type: string
-      - description: Not Required when x-nocnoc-platform is web
-        in: header
-        name: x-nocnoc-session-id
-        schema:
-          type: string
-      - description: x-nocnoc-device-id
-        in: header
-        name: x-nocnoc-device-id
-        schema:
-          type: string
-      - description: x-nocnoc-id
-        in: header
-        name: x-nocnoc-id
-        schema:
-          type: string
-      - description: accept-language
-        in: header
-        name: accept-language
-        schema:
-          type: string
+        - description: x-nocnoc-platform
+          in: header
+          name: x-nocnoc-platform
+          schema:
+            type: string
+        - description: x-nocnoc-device-os
+          in: header
+          name: x-nocnoc-device-os
+          schema:
+            type: string
+        - description: Not Required when x-nocnoc-platform is web
+          in: header
+          name: x-nocnoc-cookie-id
+          schema:
+            type: string
+        - description: Not Required when x-nocnoc-platform is web
+          in: header
+          name: x-nocnoc-session-id
+          schema:
+            type: string
+        - description: x-nocnoc-device-id
+          in: header
+          name: x-nocnoc-device-id
+          schema:
+            type: string
+        - description: x-nocnoc-id
+          in: header
+          name: x-nocnoc-id
+          schema:
+            type: string
+        - description: accept-language
+          in: header
+          name: accept-language
+          schema:
+            type: string
       requestBody:
         description: create order request
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/createOrderRequest'
-        required: true
+              type: object
+              required: ["quotationSignature", "quotationData", "payment"]
+              properties:
+                quotationSignature:
+                  type: string
+                  example: <hmac>
+                quotationData:
+                  type: string
+                  example: <base64>
+                isSmsEnabled:
+                  type: boolean
+                isTaxRequired:
+                  type: boolean
+                payment:
+                  type: object
+                  $ref: "#/components/schemas/payment"
+                taxAddress:
+                  type: object
+                  $ref: "#/components/schemas/taxAddress"
+                integrationParams:
+                  type: object
+                  $ref: "#/components/schemas/integrationParams"
       responses:
-        '201':
+        "201":
           description: Created operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/createOrderResponse'
-        '400':
+                type: object
+                required: ["data"]
+                properties:
+                  data:
+                    type: object
+                    $ref: "#/components/schemas/order"
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/errorResponse'
+                  - $ref: "#/components/schemas/errorResponse"
               examples:
                 ErrorUnmarshal:
                   summary: error unmarshal
@@ -595,27 +2284,27 @@ paths:
                     errors:
                       title: "notfound_user_info"
                       message: "not found user info"
-        '401':
+        "401":
           description: Unauthorize
-        '404':
+        "404":
           description: Not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/errorResponse'
-        '403':
+                $ref: "#/components/schemas/errorResponse"
+        "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/errorResponse'
-        '500':
+                $ref: "#/components/schemas/errorResponse"
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/errorResponse'
+                  - $ref: "#/components/schemas/errorResponse"
               examples:
                 ErrorGetPromotionDetail:
                   summary: error get promotion detail
@@ -677,68 +2366,94 @@ paths:
                     errors:
                       title: "create_order_unsuccessful"
                       message: "create order unsuccessful"
-  /v1/admin/orders:    
+  /v1/admin/orders:
     post:
       summary: Admin Create order
       tags:
-      - Admin Order
+        - Admin Order
       parameters:
-      - description: x-nocnoc-platform
-        in: header
-        name: x-nocnoc-platform
-        schema:
-          type: string
-      - description: x-nocnoc-device-os
-        in: header
-        name: x-nocnoc-device-os
-        schema:
-          type: string
-      - description: Not Required when x-nocnoc-platform is web
-        in: header
-        name: x-nocnoc-cookie-id
-        schema:
-          type: string
-      - description: Not Required when x-nocnoc-platform is web
-        in: header
-        name: x-nocnoc-session-id
-        schema:
-          type: string
-      - description: x-nocnoc-device-id
-        in: header
-        name: x-nocnoc-device-id
-        schema:
-          type: string
-      - description: x-nocnoc-id
-        in: header
-        name: x-nocnoc-id
-        schema:
-          type: string
-      - description: accept-language
-        in: header
-        name: accept-language
-        schema:
-          type: string
+        - description: x-nocnoc-platform
+          in: header
+          name: x-nocnoc-platform
+          schema:
+            type: string
+        - description: x-nocnoc-device-os
+          in: header
+          name: x-nocnoc-device-os
+          schema:
+            type: string
+        - description: Not Required when x-nocnoc-platform is web
+          in: header
+          name: x-nocnoc-cookie-id
+          schema:
+            type: string
+        - description: Not Required when x-nocnoc-platform is web
+          in: header
+          name: x-nocnoc-session-id
+          schema:
+            type: string
+        - description: x-nocnoc-device-id
+          in: header
+          name: x-nocnoc-device-id
+          schema:
+            type: string
+        - description: x-nocnoc-id
+          in: header
+          name: x-nocnoc-id
+          schema:
+            type: string
+        - description: accept-language
+          in: header
+          name: accept-language
+          schema:
+            type: string
       requestBody:
         description: create order request
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/adminCreateOrderRequest'
-        required: true
+              type: object
+              required:
+                ["quotationSignature", "quotationData", "payment", "buyerEmail"]
+              properties:
+                quotationSignature:
+                  type: string
+                  example: <hmac>
+                quotationData:
+                  type: string
+                  example: <base64>
+                isSmsEnabled:
+                  type: boolean
+                isTaxRequired:
+                  type: boolean
+                payment:
+                  type: object
+                  $ref: "#/components/schemas/payment"
+                taxAddress:
+                  type: object
+                  $ref: "#/components/schemas/taxAddress"
+                buyerEmail:
+                  type: string
+                  example: buyer@email.com
       responses:
-        '201':
+        "201":
           description: Created operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/createOrderResponse'
-        '400':
+                type: object
+                required: ["data"]
+                properties:
+                  data:
+                    type: object
+                    $ref: "#/components/schemas/order"
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/errorResponse'
+                  - $ref: "#/components/schemas/errorResponse"
               examples:
                 ErrorUnmarshal:
                   summary: error unmarshal
@@ -860,27 +2575,27 @@ paths:
                     errors:
                       title: "notfound_user_info"
                       message: "not found user info"
-        '401':
+        "401":
           description: Unauthorize
-        '404':
+        "404":
           description: Not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/errorResponse'
-        '403':
+                $ref: "#/components/schemas/errorResponse"
+        "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/errorResponse'
-        '500':
+                $ref: "#/components/schemas/errorResponse"
+        "500":
           description: Internal Server Error
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/errorResponse'
+                  - $ref: "#/components/schemas/errorResponse"
               examples:
                 ErrorGetPromotionDetail:
                   summary: error get promotion detail
@@ -942,6 +2657,7 @@ paths:
                     errors:
                       title: "create_order_unsuccessful"
                       message: "create order unsuccessful"
+
 components:
   schemas:
     baseQuotationRequest:
@@ -956,35 +2672,33 @@ components:
         quotationData:
           type: string
           example: BASE564
-    promotionRequest:
-      allOf:
-        - $ref: '#/components/schemas/baseQuotationRequest'
+    baseQuotationResponse:
       type: object
       properties:
-        couponCodes:
-          type: array
-          items:
-            type: string
-    quotationPromotionValidationResponse:
-      type: object
-      properties:
-        meta:
-          type: object
-          properties:
-            totalAppliedCount:
-              type: number
-              example: 3
         data:
           type: object
-          required: ["coupons"]
+          required:
+            - quotation
+            - quotationSignature
+            - quotationData
           properties:
-            coupons:
+            quotationSignature:
+              type: string
+              example: hmac
+            quotationData:
+              type: string
+              example: base64
+            quotation:
+              type: object
+              $ref: "#/components/schemas/QuotationDetail"
+            invalidProducts:
               type: array
               items:
-                $ref: '#/components/schemas/coupons'
+                oneOf:
+                  - $ref: "#/components/schemas/invalidProducts"
     coupons:
       type: object
-      required: ['promotiomId','type', 'couponCode', 'status']
+      required: ["promotiomId", "type", "couponCode", "status"]
       properties:
         promotionId:
           type: number
@@ -999,10 +2713,10 @@ components:
           type: string
           description: phase1 support only seller platform
           enum:
-           - seller
-           - platform
-           - voucher
-           - partner
+            - seller
+            - platform
+            - voucher
+            - partner
         status:
           type: string
           enum:
@@ -1013,9 +2727,11 @@ components:
             - USER_NOT_MATCHED
             - USER_TYPE_NOT_REACH_CONDITION
             - ALREADY_REDEEMED
+            - NOT_HAVE_ELIGIBLE_PROMOTION
+            - PAYMENT_TYPE_NOT_REACH_CONDITION
     languageModel:
       type: object
-      required: ['en']
+      required: ["en"]
       properties:
         en:
           type: string
@@ -1047,16 +2763,16 @@ components:
         sellers:
           type: array
           items:
-            $ref: '#/components/schemas/cartSellerModel'
+            $ref: "#/components/schemas/cartSellerModel"
         unavailableProducts:
           type: array
           items:
-               $ref: '#/components/schemas/UnavailableProduct'
+            $ref: "#/components/schemas/UnavailableProduct"
     cartSellerModel:
       type: object
-      required: 
+      required:
         - id
-        - name 
+        - name
       properties:
         id:
           type: number
@@ -1066,10 +2782,10 @@ components:
           example: tnk.seller
         logo:
           type: string
-          example: 'http://cdn.nocnoc.com'
+          example: "http://cdn.nocnoc.com"
         pageUrl:
           type: string
-          example: 'http://cdn.nocnoc.com'
+          example: "http://cdn.nocnoc.com"
         tag:
           type: array
           items:
@@ -1082,34 +2798,46 @@ components:
                 type: string
                 example: quality-shop
         products:
-            type: array
-            items:
-              $ref: '#/components/schemas/cartProductModel'
+          type: array
+          items:
+            $ref: "#/components/schemas/cartProductModel"
         promotion:
           type: object
           properties:
             shopCoupon:
-              $ref: '#/components/schemas/cartShopPromotionModel'
+              $ref: "#/components/schemas/cartShopPromotionModel"
     cartProductModel:
       type: object
-      required: ['id', 'skuNumber', 'selected', 'title', 'price', 'priceOriginal', 'minQuantity', 'quantity', 'stock', 'unit']
+      required:
+        [
+          "id",
+          "skuNumber",
+          "selected",
+          "title",
+          "price",
+          "priceOriginal",
+          "minQuantity",
+          "quantity",
+          "stock",
+          "unit",
+        ]
       properties:
         id:
           type: string
-          example: 'ggghh-dsad-sdfdsf'
+          example: "ggghh-dsad-sdfdsf"
         skuNumber:
           type: string
-          example: '120123'
+          example: "120123"
         selected:
           type: boolean
           example: true
         title:
-          $ref: '#/components/schemas/languageModel'
+          $ref: "#/components/schemas/languageModel"
         pageUrl:
-          $ref: '#/components/schemas/languageModel'
+          $ref: "#/components/schemas/languageModel"
         imageUrl:
           type: string
-          example: 'https://cdn.nocnoc.com'
+          example: "https://cdn.nocnoc.com"
         badges:
           type: array
           items:
@@ -1161,68 +2889,78 @@ components:
           type: string
           example: white ,1
         categoryId:
-            type: number
-            example: 12245
+          type: number
+          example: 12245
         category:
-            type: string
-            example: Electronic Appliances
+          type: string
+          example: Electronic Appliances
         subCategory:
-            type: string
-            example: Air Conditioners
+          type: string
+          example: Air Conditioners
         subSubCategory:
-            type: string
-            example: Air Conditioner  
+          type: string
+          example: Air Conditioner
         unit:
-          $ref: '#/components/schemas/languageModel'
+          $ref: "#/components/schemas/languageModel"
         bundles:
           type: array
           items:
-            $ref: '#/components/schemas/cartProductBundleModel'
+            $ref: "#/components/schemas/cartProductBundleModel"
     cartProductBundleModel:
-        type: object
-        required: ['id', 'skuNumber', 'selected', 'parentId', 'price', 'minimumQuantity', 'quantity', 'stock']
-        properties:
-          id:
-            type: object
-            example: 'ggghh-dsad-sdfdsf'
-          skuNumber:
-            type: string
-            example: 120123
-          selected:
-            type: boolean
-            example: true
-          title:
-            $ref: '#/components/schemas/languageModel'
-          imageUrl:
-            type: string
-            example: 'http://cdn.nocnoc.com'
-          parentId: 
-            type: string
-            example: 120124
-          price:
-            type: number
-            format: double
-            example: 1200.5
-          priceOriginal:
-            type: number
-            format: double
-            example: 1500.6
-          currency:
-            type: string
-            example: ฿
-          minimumQuantity:
-            type: number
-            example: 5
-          quantity:
-            type: number
-            example: 10
-          stock:
-            type: number
-            example: 9990
-          collectionName:
-            type: string
-            example: white        
-          
+      type: object
+      required:
+        [
+          "id",
+          "skuNumber",
+          "selected",
+          "parentId",
+          "price",
+          "minimumQuantity",
+          "quantity",
+          "stock",
+        ]
+      properties:
+        id:
+          type: object
+          example: "ggghh-dsad-sdfdsf"
+        skuNumber:
+          type: string
+          example: 120123
+        selected:
+          type: boolean
+          example: true
+        title:
+          $ref: "#/components/schemas/languageModel"
+        imageUrl:
+          type: string
+          example: "http://cdn.nocnoc.com"
+        parentId:
+          type: string
+          example: 120124
+        price:
+          type: number
+          format: double
+          example: 1200.5
+        priceOriginal:
+          type: number
+          format: double
+          example: 1500.6
+        currency:
+          type: string
+          example: ฿
+        minimumQuantity:
+          type: number
+          example: 5
+        quantity:
+          type: number
+          example: 10
+        stock:
+          type: number
+          example: 9990
+        collectionName:
+          type: string
+          example: white
+
     cartShopPromotionModel:
       type: object
       properties:
@@ -1233,10 +2971,11 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/cartPromotionItemModel'
+            $ref: "#/components/schemas/cartPromotionItemModel"
     cartPromotionItemModel:
       type: object
-      required: ["id", "title", "discount", "discountType", "startedAt", "endedAt"]
+      required:
+        ["id", "title", "discount", "discountType", "startedAt", "endedAt"]
       properties:
         id:
           type: number
@@ -1265,11 +3004,11 @@ components:
             - FLAT
         condition:
           type: string
-          description: 'TBC locale logic should in bff or be'
-          example: 'เมื่อช้อปครบ ฿3,000, ลดสูงสุด ฿1,500' 
+          description: "TBC locale logic should in bff or be"
+          example: "เมื่อช้อปครบ ฿3,000, ลดสูงสุด ฿1,500"
         description:
           type: string
-          example: 'คูปองนี้มีจำนวนจำกัด' 
+          example: "คูปองนี้มีจำนวนจำกัด"
           description: field promotionDetails จาก promotion-service
         imageUrl:
           type: string
@@ -1283,84 +3022,6 @@ components:
         endedAt:
           type: string
           example: "2024-04-01T12:00:00Z"
-    UpdateQuotationRequest:
-      type: object
-      required:
-        - quotationSignature
-        - quotationData
-      properties:
-        quotationSignature:
-          type: string
-          example: hmac
-        quotationData:
-          type: string
-          example: base64
-        addressId:
-              type: number
-              example: 11150
-        sellers:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-                example: 0
-              saleOrders:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    defaultDeliveryOption:
-                      type: object
-                      properties:
-                        carrierId:
-                          type: integer
-                          example: 0
-                    saleOrderRef:
-                      type: string
-                      example: "string"
-        invalidProducts:
-              type: array
-              items:
-                type: object
-                properties:
-                  skuNumber:
-                    type: string
-                    example: 123
-                  quantity:
-                    type: number
-                    example: 5
-                  sellerId:
-                    type: number
-                    example: 1234
-                    required:
-                    - skuNumber
-                    - quantity
-                    - sellerId
-    UpdateQuotationResponse:
-      type: object
-      properties:
-        data:
-          type: object
-          required:
-            - quotation
-            - quotationSignature
-            - quotationData
-          properties:
-            quotationSignature:
-              type: string
-              example: hmac
-            quotationData:
-              type: string
-              example: base64
-            quotation:
-              type: object
-              $ref: '#/components/schemas/QuotationDetail'
-            invalidProducts:
-              type: array
-              items:
-                 $ref: '#/components/schemas/invalidProducts'
     QuotationDetail:
       type: object
       required:
@@ -1377,7 +3038,7 @@ components:
         sellers:
           type: array
           items:
-            $ref: '#/components/schemas/SellerDetail'
+            $ref: "#/components/schemas/SellerDetail"
     SellerDetail:
       type: object
       required:
@@ -1400,7 +3061,7 @@ components:
         tags:
           type: array
           items:
-            $ref: '#/components/schemas/TagDetail'
+            $ref: "#/components/schemas/TagDetail"
         promotion:
           type: object
           properties:
@@ -1414,7 +3075,7 @@ components:
         saleOrders:
           type: array
           items:
-            $ref: '#/components/schemas/SaleOrderDetail'
+            $ref: "#/components/schemas/SaleOrderDetail"
 
     SaleOrderDetail:
       type: object
@@ -1430,19 +3091,19 @@ components:
         products:
           type: array
           items:
-            $ref: '#/components/schemas/ProductDetail'
+            $ref: "#/components/schemas/ProductDetail"
         defaultDeliveryOption:
           type: object
           required:
             - carrierId
           properties:
-           carrierId:
-            type: number
-            example: 12
+            carrierId:
+              type: number
+              example: 12
         deliveryOptions:
           type: array
           items:
-            $ref: '#/components/schemas/DeliveryOptionDetail'
+            $ref: "#/components/schemas/DeliveryOptionDetail"
     ProductDetail:
       type: object
       required:
@@ -1474,7 +3135,7 @@ components:
         badges:
           type: array
           items:
-            $ref: '#/components/schemas/BadgeDetail'
+            $ref: "#/components/schemas/BadgeDetail"
         price:
           type: number
           example: 120.12
@@ -1577,135 +3238,65 @@ components:
           type: string
           example: ฿
     invalidProducts:
-              type: array
-              items:
-                type: object
-                properties:
-                  collectionName:
-                    type: string
-                    example: "Fall Collection"
-                  currency:
-                    type: string
-                    example: "฿"
-                  imageUrl:
-                    type: string
-                    example: "https://example.com/image.jpg"
-                  price:
-                    type: number
-                    format: float
-                    example: 49.99
-                  priceOriginal:
-                    type: number
-                    format: float
-                    example: 79.99
-                  quantity:
-                    type: integer
-                    example: 10
-                  sellerId:
-                    type: integer
-                    example: 1234
-                  skuNumber:
-                    type: string
-                    example: "SKU123456"
-                  title:
-                    type: object
-                    properties:
-                      en:
-                        type: string
-                        example: "Winter Jacket"
-                      th:
-                        type: string
-                        example: "แจ็คเก็ตฤดูหนาว"
-                  type:
-                    type: string
-                    enum: ["OUT_OF_STOCK","UNAVAILABLE"]            
-                    required:
-                    - skuNumber
-                    - quantity
-                    - sellerId
-                  categoryId:
-                    type: number
-                    example: 12245
-                  category:
-                    type: string
-                    example: Electronic Appliances
-                  subCategory:
-                    type: string
-                    example: Air Conditioners
-                  subSubCategory:
-                    type: string
-                    example: Air Conditioner  
-    CreateQuotationRequest:
-      required:
-        - sellers
-        - addressId
-      type: object
-      properties:
-        addressId:
-          type: integer
-          example: 1
-        couponCodes:
-          type: array
-          items:
+      type: array
+      items:
+        type: object
+        properties:
+          collectionName:
             type: string
-            example: "1234"
-        sellers:
-          type: array
-          items:
+            example: "Fall Collection"
+          currency:
+            type: string
+            example: "฿"
+          imageUrl:
+            type: string
+            example: "https://example.com/image.jpg"
+          price:
+            type: number
+            format: float
+            example: 49.99
+          priceOriginal:
+            type: number
+            format: float
+            example: 79.99
+          quantity:
+            type: integer
+            example: 10
+          sellerId:
+            type: integer
+            example: 1234
+          skuNumber:
+            type: string
+            example: "SKU123456"
+          title:
             type: object
-            $ref: '#/components/schemas/CreateQuotationDetail'
-            
-    CreateQuotationResponse:
-      type: object
-      properties:
-        data:
-          type: object
-          required:
-            - quotation
-            - userSelection
-          properties:
-            quotationSignature:
-              type: string
-              example: hmac
-            quotationData:
-              type: string
-              example: base64
-            quotation:
-              type: object
-              $ref: '#/components/schemas/QuotationDetail'
-            invalidProducts:
-              type: array
-              items:
-                oneOf:
-                  - $ref: '#/components/schemas/invalidProducts'
-
-    CreateQuotationDetail:
-      type: object
-      required:
-        - sellerId
-        - products
-        - couponCodes
-      properties:
-        sellerId:
-          type: string
-          example: 123
-        products:
-          type: array
-          items:
-            type: object
-            required:
-                - skuNumber
-                - quantity
             properties:
-              skuNumber:
+              en:
                 type: string
-                example: "123456"
-              title:
+                example: "Winter Jacket"
+              th:
                 type: string
-                example: "tv 42 inch"
-              quantity:
-                type: integer
-                example: 10
+                example: "แจ็คเก็ตฤดูหนาว"
+          type:
+            type: string
+            enum: ["OUT_OF_STOCK", "UNAVAILABLE"]
+            required:
+              - skuNumber
+              - quantity
+              - sellerId
+          categoryId:
+            type: number
+            example: 12245
+          category:
+            type: string
+            example: Electronic Appliances
+          subCategory:
+            type: string
+            example: Air Conditioners
+          subSubCategory:
+            type: string
+            example: Air Conditioner
+
     UnavailableProduct:
       type: object
       properties:
@@ -1743,203 +3334,60 @@ components:
               example: "แจ็คเก็ตฤดูหนาว"
         type:
           type: string
-          enum: [UNAVAILABLE,OUT_OF_STOCK]
+          enum: [UNAVAILABLE, OUT_OF_STOCK]
         categoryId:
-            type: number
-            example: 12245
+          type: number
+          example: 12245
         category:
-            type: string
-            example: Electronic Appliances
+          type: string
+          example: Electronic Appliances
         subCategory:
-            type: string
-            example: Air Conditioners
+          type: string
+          example: Air Conditioners
         subSubCategory:
-            type: string
-            example: Air Conditioner
-    quotationSummaryRequest:
+          type: string
+          example: Air Conditioner
+    ippDescription:
       type: object
-      required:
-        - quotationSignature
-        - quotationData
-        - sellers
       properties:
-        quotationSignature:
+        bankCode:
           type: string
-          example: <hmac>
-        quotationData:
+          example: 123
+        bankNameTh:
           type: string
-          example: <base64>
-        couponCodes:
-          type: array
-          items: 
-            type: string
-          example: [""]
-        sellers:
+          example: "บัตรกรุงไทย จำกัด(มหาชน)"
+        bankNameEn:
+          type: string
+          example: Krungthai Card
+        mdr:
+          type: number
+          example: 0
+        isActive:
+          type: boolean
+        ippLists:
           type: array
           items:
             type: object
-            required:
-            - id
-            - saleOrders
             properties:
               id:
                 type: number
-              saleOrders:
-                type: array
-                items:
-                  type: object
-                  required:
-                  - saleOrderRef
-                  - defaultDeliveryOption
-                  properties:
-                    saleOrderRef:
-                      type: string
-                    defaultDeliveryOption:
-                      type: object
-                      required:
-                        - carrierId
-                      properties:
-                        carrierId:
-                          type: number
-                          example: 12
-        useNocnocPoint:
-          type: boolean
-          example: true
-        # payment:
-        #   type: object
-        #   description: waiting confirm with platform team
-        #   properties:
-        #     paymentType:
-        #       type: string
-        #       example: ""
-        #     cardData:
-        #       type: object
-        #       example: {}
-        #     bankCode:
-        #       type: string
-        #       example: ""
-    quotationSummaryResponse:
-      type: object
-      required: ["data"]
-      properties:
-        data:
-          type: object
-          required: ["appliedPromotions", "totalPrice", "totalDiscount", "totalPriceAfterDiscount", "totalShippingFee", "totalShippingFeeAfterDiscount", "grandTotalDiscount", "grandTotal"]
-          properties:
-            quotationData:
-              type: string
-              example: "<base64>"
-            quotationSignature:
-              type: string
-              example: "<hmac>"
-            coupons:
-              type: array
-              items:
-                properties:
-                  promotionId: 
-                    type: number
-                    example: 12345678
-                  couponCode:
-                    type: string
-                    example: "NN1234"
-                  limitApplies:
-                    type: number
-                    example: 1
-                  type:
-                    type: string
-                    example: "NOCNOC_COUPON"
-                  status:
-                    type: string
-                    enum: [VALID, NOTFOUND, ORDER_VALUE_NOT_REACH_MINIMUM]
-                    example: "VALID"
-            nocnocPoint:
-              type: object
-              properties:
-                availablePoint:
-                  type: number
-                  example: 0
-                isNocNocClubMember:
-                  type: boolean
-                  example: true
-                pointBalance:
-                  type: number
-                  example: 0
-                pointValue:
-                  type: number
-                  example: 0
-            totalPrice:
-              type: number
-              example: 56300
-            totalShopCouponDiscount:
-              type: number
-              example: 350
-            totalPlatformDiscount:
-              type: number
-              example: 5630
-              description: "total discount from platform coupon (depreciated, use totalPlatformCouponDiscount instead)"
-            totalPlatformCouponDiscount:
-              type: number
-              example: 5630
-              description: "total discount from platform coupon"
-            totalPartnerCouponDiscount:
-              type: number
-              example: 0
-            totalVoucherDiscount:
-              type: number
-              example: 1000
-            totalDiscount:
-              type: number
-              example: 6980
-            totalNocnocPointDiscount:
-              type: number
-              example: 40
-            totalPriceAfterDiscount:
-              type: number
-              example: 50320
-            totalShippingFee:
-              type: number
-              example: 1770
-            totalSellerShippingDiscount:
-              type: number
-              example: 10
-            totalPlatformShippingDiscount:
-              type: number
-              example: 270
-            totalShippingFeeAfterDiscount:
-              type: number
-              example: 280
-            grandTotalDiscount:
-              type: number
-              example: 7300
-            grandTotal:
-              type: number
-              example: 50770
-            currency:
-              type: string
-              example: ฿  
-    createOrderRequest:
-      type: object
-      required: ["quotationSignature", "quotationData", "payment"]
-      properties:
-        quotationSignature:
-          type: string
-          example: <hmac>
-        quotationData:
-          type: string
-          example: <base64>
-        isSmsEnabled:
-          type: boolean
-        isTaxRequired:
-          type: boolean
-        payment:
-          type: object
-          $ref: '#/components/schemas/payment'
-        taxAddress:
-          type: object
-          $ref: '#/components/schemas/taxAddress'
-        integrationParams:
-          type: object
-          $ref: '#/components/schemas/integrationParams'
+                example: 1
+              term:
+                type: number
+                example: 4
+              rate:
+                type: number
+                example: 0
+              nocnocSub:
+                type: boolean
+              sellerSub:
+                type: boolean
+              title:
+                type: string
+                example: 4 เดือน
+              minAmount:
+                type: number
+                example: 3000
     payment:
       required: ["paymentType", "currency"]
       type: object
@@ -1954,7 +3402,7 @@ components:
           type: integer
         paymentType:
           type: string
-          example: "CARD | IPP | QR" 
+          example: "CARD | IPP | QR"
         redirectUrl:
           type: string
     taxAddress:
@@ -1999,13 +3447,6 @@ components:
           type: string
         utmTerm:
           type: string
-    createOrderResponse:
-      type: object
-      required: ["data"]
-      properties:
-        data:
-          type: object
-          $ref: '#/components/schemas/order'
     order:
       type: object
       properties:
@@ -2025,35 +3466,11 @@ components:
           type: string
         transactionId:
           type: string
-    adminCreateOrderRequest:
-      type: object
-      required: ["quotationSignature", "quotationData", "payment", "buyerEmail"]
-      properties:
-        quotationSignature:
-          type: string
-          example: <hmac>
-        quotationData:
-          type: string
-          example: <base64>
-        isSmsEnabled:
-          type: boolean
-        isTaxRequired:
-          type: boolean
-        payment:
-          type: object
-          $ref: '#/components/schemas/payment'
-        taxAddress:
-          type: object
-          $ref: '#/components/schemas/taxAddress'
-        buyerEmail:
-          type: string
-          example: buyer@email.com
   securitySchemes:
     bearer:
       type: http
       scheme: bearer
       bearerFormat: "JWT"
-      
+
 security:
   - bearer: []
-
