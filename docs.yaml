@@ -1298,7 +1298,7 @@ paths:
               required:
                 - sellers
                 - addressId
-                - buyerEmail
+                - buyerUserId
               type: object
               properties:
                 addressId:
@@ -1338,9 +1338,9 @@ paths:
                             quantity:
                               type: integer
                               example: 10
-                buyerEmail:
-                  type: string
-                  example: buyer@email.com
+                buyerUserId:
+                  type: integer
+                  example: 5678
       responses:
         "200":
           description: Admin Create Quotation Success
@@ -1410,6 +1410,7 @@ paths:
               required:
                 - quotationSignature
                 - quotationData
+                - buyerUserId
               properties:
                 quotationSignature:
                   type: string
@@ -1460,9 +1461,9 @@ paths:
                           - skuNumber
                           - quantity
                           - sellerId
-                buyerEmail:
-                  type: string
-                  example: buyer@email.com
+                buyerUserId:
+                  type: integer
+                  example: 5678
       responses:
         "200":
           description: update quotation success
@@ -1535,9 +1536,9 @@ paths:
           application/json:
             schema:
               required:
-                - buyerEmail
                 - quotationSignature
                 - quotationData
+                - buyerUserId
               type: object
               properties:
                 quotationSignature:
@@ -1554,9 +1555,9 @@ paths:
                 useNocnocPoint:
                   type: boolean
                   example: true
-                buyerEmail:
-                  type: string
-                  example: buyer@email.com
+                buyerUserId:
+                  type: integer
+                  example: 5678
       responses:
         "200":
           description: Success
@@ -1649,7 +1650,7 @@ paths:
           application/json:
             schema:
               required:
-                - buyerEmail
+                - buyerUserId
               allOf:
                 - $ref: "#/components/schemas/baseQuotationRequest"
               properties:
@@ -1657,9 +1658,9 @@ paths:
                   type: array
                   items:
                     type: string
-                buyerEmail:
-                  type: string
-                  example: buyer@email.com
+                buyerUserId:
+                  type: integer
+                  example: 5678
       responses:
         "200":
           description: "success"
@@ -1746,7 +1747,7 @@ paths:
           application/json:
             schema:
               required:
-                - buyerEmail
+                - buyerUserId
               allOf:
                 - $ref: "#/components/schemas/baseQuotationRequest"
               properties:
@@ -1754,9 +1755,9 @@ paths:
                   type: array
                   items:
                     type: string
-                buyerEmail:
-                  type: string
-                  example: buyer@email.com
+                buyerUserId:
+                  type: integer
+                  example: 5678
       responses:
         "200":
           description: success
@@ -1838,6 +1839,7 @@ paths:
                 - quotationSignature
                 - quotationData
                 - sellers
+                - buyerUserId
               properties:
                 quotationSignature:
                   type: string
@@ -1881,6 +1883,9 @@ paths:
                 useNocnocPoint:
                   type: boolean
                   example: true
+                buyerUserId:
+                  type: integer
+                  example: 5678
       responses:
         "200":
           description: Successful operation
@@ -2123,7 +2128,10 @@ paths:
           application/json:
             schema:
               type: object
-              required: ["quotationSignature", "quotationData", "payment"]
+              required:
+                - quotationSignature
+                - quotationData
+                - payment
               properties:
                 quotationSignature:
                   type: string
@@ -2414,7 +2422,10 @@ paths:
             schema:
               type: object
               required:
-                ["quotationSignature", "quotationData", "payment", "buyerEmail"]
+                - quotationSignature
+                - quotationData
+                - payment
+                - buyerUserId
               properties:
                 quotationSignature:
                   type: string
@@ -2432,9 +2443,9 @@ paths:
                 taxAddress:
                   type: object
                   $ref: "#/components/schemas/taxAddress"
-                buyerEmail:
-                  type: string
-                  example: buyer@email.com
+                buyerUserId:
+                  type: integer
+                  example: 5678
       responses:
         "201":
           description: Created operation
