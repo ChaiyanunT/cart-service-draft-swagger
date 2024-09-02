@@ -522,7 +522,12 @@ paths:
                           required:
                             - skuNumber
                             - quantity
+                            - categoryId
                           properties:
+                            categoryId:
+                              type: integer
+                              example: 1
+                              default: 0
                             skuNumber:
                               type: string
                               example: "123456"
@@ -1328,7 +1333,12 @@ paths:
                           required:
                             - skuNumber
                             - quantity
+                            - categoryId
                           properties:
+                            categoryId:
+                              type: integer
+                              example: 1
+                              default: 0
                             skuNumber:
                               type: string
                               example: "123456"
