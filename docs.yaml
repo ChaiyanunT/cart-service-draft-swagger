@@ -1188,25 +1188,25 @@ paths:
                   value:
                     errors:
                       title: "invalid_parameter"
-                      message: "Invalid carrierId, please check request body"
+                      detail: "Invalid carrierId, please check request body"
                 InvalidSignature:
                   summary: invalid signature
                   value:
                     errors:
                       title: "invalid_signature"
-                      message: "Invalid quotationSignature, plase check request body"
+                      detail: "Invalid quotationSignature, plase check request body"
                 InvalidDeliveryOption:
                   summary: invalid delivery option
                   value:
                     errors:
                       title: "invalid_delivery_option"
-                      message: "delivery option not found"
+                      detail: "delivery option not found"
                 InvalidQuotationData:
                   summary: invalid quotation data
                   value:
                     errors:
                       title: "invalid_quotation_data"
-                      message: "Cannot decode quotationData, plase check request body"
+                      detail: "Cannot decode quotationData, plase check request body"
         "401":
           description: Unauthorize
         "404":
@@ -1234,13 +1234,13 @@ paths:
                   value:
                     errors:
                       title: "internal_server_error"
-                      message: "Something wrong, or {{some error message}}"
+                      detail: "Something wrong, or {{some error message}}"
                 UnknownPromotionBusinessType:
                   summary: Unknown promotion business type
                   value:
                     errors:
                       title: "unknown_promotion_business_type"
-                      message: "Unknown promotion business type"
+                      detail: "Unknown promotion business type"
         "502":
           description: External Server Error
           content:
@@ -1254,7 +1254,7 @@ paths:
                   value:
                     errors:
                       title: "external_server_error"
-                      message: "[Promotion] Get seller promotion sku pricing has error"
+                      detail: "[Promotion] Get seller promotion sku pricing has error"
   /v1/admin/quotation:
     post:
       tags:
@@ -2007,25 +2007,25 @@ paths:
                   value:
                     errors:
                       title: "invalid_parameter"
-                      message: "Invalid carrierId, please check request body"
+                      detail: "Invalid carrierId, please check request body"
                 InvalidSignature:
                   summary: invalid signature
                   value:
                     errors:
                       title: "invalid_signature"
-                      message: "Invalid quotationSignature, plase check request body"
+                      detail: "Invalid quotationSignature, plase check request body"
                 InvalidDeliveryOption:
                   summary: invalid delivery option
                   value:
                     errors:
                       title: "invalid_delivery_option"
-                      message: "delivery option not found"
+                      detail: "delivery option not found"
                 InvalidQuotationData:
                   summary: invalid quotation data
                   value:
                     errors:
                       title: "invalid_quotation_data"
-                      message: "Cannot decode quotationData, plase check request body"
+                      detail: "Cannot decode quotationData, plase check request body"
         "401":
           description: Unauthorize
         "404":
@@ -2053,13 +2053,13 @@ paths:
                   value:
                     errors:
                       title: "internal_server_error"
-                      message: "Something wrong, or {{some error message}}"
+                      detail: "Something wrong, or {{some error message}}"
                 UnknownPromotionBusinessType:
                   summary: Unknown promotion business type
                   value:
                     errors:
                       title: "unknown_promotion_business_type"
-                      message: "Unknown promotion business type"
+                      detail: "Unknown promotion business type"
         "502":
           description: External Server Error
           content:
@@ -2073,7 +2073,7 @@ paths:
                   value:
                     errors:
                       title: "external_server_error"
-                      message: "[Promotion] Get seller promotion sku pricing has error"
+                      detail: "[Promotion] Get seller promotion sku pricing has error"
   /v1/user/orders:
     post:
       summary: Create order
@@ -2183,6 +2183,18 @@ paths:
                       authorizeUrl: "https://www.example.com"
                       scannableCode: ""
                       transactionId: "zzzzzzzz"
+                PaymentTypeIPP:
+                  summary: paymentType = IPP
+                  value:
+                    data:
+                      expiresAt: "2021-01-01T00:00:00Z"
+                      msg: "success"
+                      orderNo: "TEST_ORDER"
+                      orderStatus: "PLACED"
+                      paymentType: "IPP"
+                      authorizeUrl: "https://www.example.com"
+                      scannableCode: ""
+                      transactionId: "zzzzzzzz" 
                 CreatedButPaymentFailed:
                   summary: created but payment failed
                   value:
@@ -2208,121 +2220,121 @@ paths:
                   value:
                     errors:
                       title: "error_unmarshal"
-                      message: "cannot unmarshal data"
+                      detail: "cannot unmarshal data"
                 ErrorDecode64:
                   summary: error decode64
                   value:
                     errors:
                       title: "error_decode64"
-                      message: "decode64 data error"
+                      detail: "decode64 data error"
                 InvalidSignature:
                   summary: invalid signature
                   value:
                     errors:
                       title: "invalid_signature"
-                      message: "invalid signature"
+                      detail: "invalid signature"
                 NotfoundAddress:
                   summary: not found address
                   value:
                     errors:
                       title: "notfound_address"
-                      message: "not found address"
+                      detail: "not found address"
                 NotfoundProduct:
                   summary: not found product
                   value:
                     errors:
                       title: "notfound_product"
-                      message: "not found product"
+                      detail: "not found product"
                 InvalidAllShipping:
                   summary: invalid all shipping
                   value:
                     errors:
                       title: "invalid_all_shipping"
-                      message: "all shipping not available"
+                      detail: "all shipping not available"
                 InvalidSomeShipping:
                   summary: invalid some shipping
                   value:
                     errors:
                       title: "invalid_some_shipping"
-                      message: "some shipping not available"
+                      detail: "some shipping not available"
                 OutOfStockProduct:
                   summary: out of stock product
                   value:
                     errors:
                       title: "out_of_stock_product"
-                      message: "product out of stock"
+                      detail: "product out of stock"
                 InvalidSelectedDelivery:
                   summary: invalid selected delivery
                   value:
                     errors:
                       title: "invalid_selected_delivery"
-                      message: "invalid selected delivery"
+                      detail: "invalid selected delivery"
                 InvalidShippingCost:
                   summary: invalid shipping cost
                   value:
                     errors:
                       title: "invalid_shipping_cost"
-                      message: "invalid shipping cost"
+                      detail: "invalid shipping cost"
                 InvalidPrice:
                   summary: invalid price
                   value:
                     errors:
                       title: "invalid_price"
-                      message: "invalid price"
+                      detail: "invalid price"
                 InvalidPlatformPartnerCoupon:
                   summary: invalid platform partner coupon
                   value:
                     errors:
                       title: "invalid_platform_partner_coupon"
-                      message: "invalid platform partner coupon"
+                      detail: "invalid platform partner coupon"
                 InvalidShopCoupon:
                   summary: invalid shop coupon
                   value:
                     errors:
                       title: "invalid_shop_coupon"
-                      message: "invalid shop coupon"
+                      detail: "invalid shop coupon"
                 InvalidPoint:
                   summary: invalid point
                   value:
                     errors:
                       title: "invalid_point"
-                      message: "invalid point"
+                      detail: "invalid point"
                 InvalidSummary:
                   summary: invalid summary
                   value:
                     errors:
                       title: "invalid_summary"
-                      message: "invalid summary"
+                      detail: "invalid summary"
                 InvalidCouponPayment:
                   summary: invalid coupon payment
                   value:
                     errors:
                       title: "invalid_coupon_payment"
-                      message: "invalid coupon payment"
+                      detail: "invalid coupon payment"
                 InvalidIpp:
                   summary: invalid ipp
                   value:
                     errors:
                       title: "invalid_ipp"
-                      message: "invalid ipp"
+                      detail: "invalid ipp"
                 InvalidIppPromotion:
                   summary: invalid ipp promotion
                   value:
                     errors:
                       title: "invalid_ipp_promotion"
-                      message: "invalid ipp promotion"
+                      detail: "invalid ipp promotion"
                 ErrorGetUserInfo:
                   summary: error get user info
                   value:
                     errors:
                       title: "error_get_user_info"
-                      message: "error get user info"
+                      detail: "error get user info"
                 NotfoundUserInfo:
                   summary: not found user info
                   value:
                     errors:
                       title: "notfound_user_info"
-                      message: "not found user info"
+                      detail: "not found user info"
         "401":
           description: Unauthorize
         "404":
@@ -2350,61 +2362,61 @@ paths:
                   value:
                     errors:
                       title: "error_get_promotion_detail"
-                      message: "error get promotion detail"
+                      detail: "error get promotion detail"
                 ErrorBreakdownSaleOrder:
                   summary: error breakdown sale order
                   value:
                     errors:
                       title: "error_breakdown_sale_order"
-                      message: "error breakdown sale order"
+                      detail: "error breakdown sale order"
                 ErrorGetNoncnocDiscountPoint:
                   summary: error get noncnoc discount point
                   value:
                     errors:
                       title: "error_get_noncnoc_discount_point"
-                      message: "error get noncnoc discount point"
+                      detail: "error get noncnoc discount point"
                 ErrorGetAddress:
                   summary: error get address
                   value:
                     errors:
                       title: "error_get_address"
-                      message: "error get address"
+                      detail: "error get address"
                 ErrorProductRepository:
                   summary: error product repository
                   value:
                     errors:
                       title: "error_product_repository"
-                      message: "cannot get products by SKUs from repository"
+                      detail: "cannot get products by SKUs from repository"
                 ErrorCouponPaymentValidate:
                   summary: error coupon payment validate
                   value:
                     errors:
                       title: "error_coupon_payment_validate"
-                      message: "error coupon payment validate"
+                      detail: "error coupon payment validate"
                 ErrorPromotionPartnershipValidate:
                   summary: error promotion partnership validate
                   value:
                     errors:
                       title: "error_promotion_partnership_validate"
-                      message: "error promotion partnership validate"
+                      detail: "error promotion partnership validate"
                 ErrorIppAssignment:
                   summary: error ipp assignment
                   value:
                     errors:
                       title: "error_ipp_assignment"
-                      message: "error ipp assignment"
+                      detail: "error ipp assignment"
                 ErrorCreateOrder:
                   summary: error create order
                   value:
                     errors:
                       title: "error_create_order"
-                      message: "error create order"
+                      detail: "error create order"
                 CreateOrderUnsuccessful:
                   summary: create order unsuccessful
                   value:
                     errors:
                       title: "create_order_unsuccessful"
-                      message: "create order unsuccessful"
+                      detail: "create order unsuccessful"
   /v1/admin/orders:
     post:
       summary: Admin Create order
@@ -2515,6 +2527,18 @@ paths:
                       authorizeUrl: "https://www.example.com"
                       scannableCode: ""
                       transactionId: "zzzzzzzz"
+                PaymentTypeIPP:
+                  summary: paymentType = IPP
+                  value:
+                    data:
+                      expiresAt: "2021-01-01T00:00:00Z"
+                      msg: "success"
+                      orderNo: "TEST_ORDER"
+                      orderStatus: "PLACED"
+                      paymentType: "IPP"
+                      authorizeUrl: "https://www.example.com"
+                      scannableCode: ""
+                      transactionId: "zzzzzzzz" 
                 CreatedButPaymentFailed:
                   summary: created but payment failed
                   value:
@@ -2540,121 +2564,121 @@ paths:
                   value:
                     errors:
                       title: "error_unmarshal"
-                      message: "cannot unmarshal data"
+                      detail: "cannot unmarshal data"
                 ErrorDecode64:
                   summary: error decode64
                   value:
                     errors:
                       title: "error_decode64"
-                      message: "decode64 data error"
+                      detail: "decode64 data error"
                 InvalidSignature:
                   summary: invalid signature
                   value:
                     errors:
                       title: "invalid_signature"
-                      message: "invalid signature"
+                      detail: "invalid signature"
                 NotfoundAddress:
                   summary: not found address
                   value:
                     errors:
                       title: "notfound_address"
-                      message: "not found address"
+                      detail: "not found address"
                 NotfoundProduct:
                   summary: not found product
                   value:
                     errors:
                       title: "notfound_product"
-                      message: "not found product"
+                      detail: "not found product"
                 InvalidAllShipping:
                   summary: invalid all shipping
                   value:
                     errors:
                       title: "invalid_all_shipping"
-                      message: "all shipping not available"
+                      detail: "all shipping not available"
                 InvalidSomeShipping:
                   summary: invalid some shipping
                   value:
                     errors:
                       title: "invalid_some_shipping"
-                      message: "some shipping not available"
+                      detail: "some shipping not available"
                 OutOfStockProduct:
                   summary: out of stock product
                   value:
                     errors:
                       title: "out_of_stock_product"
-                      message: "product out of stock"
+                      detail: "product out of stock"
                 InvalidSelectedDelivery:
                   summary: invalid selected delivery
                   value:
                     errors:
                       title: "invalid_selected_delivery"
-                      message: "invalid selected delivery"
+                      detail: "invalid selected delivery"
                 InvalidShippingCost:
                   summary: invalid shipping cost
                   value:
                     errors:
                       title: "invalid_shipping_cost"
-                      message: "invalid shipping cost"
+                      detail: "invalid shipping cost"
                 InvalidPrice:
                   summary: invalid price
                   value:
                     errors:
                       title: "invalid_price"
-                      message: "invalid price"
+                      detail: "invalid price"
                 InvalidPlatformPartnerCoupon:
                   summary: invalid platform partner coupon
                   value:
                     errors:
                       title: "invalid_platform_partner_coupon"
-                      message: "invalid platform partner coupon"
+                      detail: "invalid platform partner coupon"
                 InvalidShopCoupon:
                   summary: invalid shop coupon
                   value:
                     errors:
                       title: "invalid_shop_coupon"
-                      message: "invalid shop coupon"
+                      detail: "invalid shop coupon"
                 InvalidPoint:
                   summary: invalid point
                   value:
                     errors:
                       title: "invalid_point"
-                      message: "invalid point"
+                      detail: "invalid point"
                 InvalidSummary:
                   summary: invalid summary
                   value:
                     errors:
                       title: "invalid_summary"
-                      message: "invalid summary"
+                      detail: "invalid summary"
                 InvalidCouponPayment:
                   summary: invalid coupon payment
                   value:
                     errors:
                       title: "invalid_coupon_payment"
-                      message: "invalid coupon payment"
+                      detail: "invalid coupon payment"
                 InvalidIpp:
                   summary: invalid ipp
                   value:
                     errors:
                       title: "invalid_ipp"
-                      message: "invalid ipp"
+                      detail: "invalid ipp"
                 InvalidIppPromotion:
                   summary: invalid ipp promotion
                   value:
                     errors:
                       title: "invalid_ipp_promotion"
-                      message: "invalid ipp promotion"
+                      detail: "invalid ipp promotion"
                 ErrorGetUserInfo:
                   summary: error get user info
                   value:
                     errors:
                       title: "error_get_user_info"
-                      message: "error get user info"
+                      detail: "error get user info"
                 NotfoundUserInfo:
                   summary: not found user info
                   value:
                     errors:
                       title: "notfound_user_info"
-                      message: "not found user info"
+                      detail: "not found user info"
         "401":
           description: Unauthorize
         "404":
@@ -2682,61 +2706,61 @@ paths:
                   value:
                     errors:
                       title: "error_get_promotion_detail"
-                      message: "error get promotion detail"
+                      detail: "error get promotion detail"
                 ErrorBreakdownSaleOrder:
                   summary: error breakdown sale order
                   value:
                     errors:
                       title: "error_breakdown_sale_order"
-                      message: "error breakdown sale order"
+                      detail: "error breakdown sale order"
                 ErrorGetNoncnocDiscountPoint:
                   summary: error get noncnoc discount point
                   value:
                     errors:
                       title: "error_get_noncnoc_discount_point"
-                      message: "error get noncnoc discount point"
+                      detail: "error get noncnoc discount point"
                 ErrorGetAddress:
                   summary: error get address
                   value:
                     errors:
                       title: "error_get_address"
-                      message: "error get address"
+                      detail: "error get address"
                 ErrorProductRepository:
                   summary: error product repository
                   value:
                     errors:
                       title: "error_product_repository"
-                      message: "cannot get products by SKUs from repository"
+                      detail: "cannot get products by SKUs from repository"
                 ErrorCouponPaymentValidate:
                   summary: error coupon payment validate
                   value:
                     errors:
                       title: "error_coupon_payment_validate"
-                      message: "error coupon payment validate"
+                      detail: "error coupon payment validate"
                 ErrorPromotionPartnershipValidate:
                   summary: error promotion partnership validate
                   value:
                     errors:
                       title: "error_promotion_partnership_validate"
-                      message: "error promotion partnership validate"
+                      detail: "error promotion partnership validate"
                 ErrorIppAssignment:
                   summary: error ipp assignment
                   value:
                     errors:
                       title: "error_ipp_assignment"
-                      message: "error ipp assignment"
+                      detail: "error ipp assignment"
                 ErrorCreateOrder:
                   summary: error create order
                   value:
                     errors:
                       title: "error_create_order"
-                      message: "error create order"
+                      detail: "error create order"
                 CreateOrderUnsuccessful:
                   summary: create order unsuccessful
                   value:
                     errors:
                       title: "create_order_unsuccessful"
-                      message: "create order unsuccessful"
+                      detail: "create order unsuccessful"
 
 components:
   schemas:
@@ -2824,11 +2848,11 @@ components:
           type: array
           items:
             type: object
-            required: ["title", "message"]
+            required: ["title", "detail"]
             properties:
               title:
                 type: string
-              message:
+              detail:
                 type: string
     cartReponseModel:
       type: object
