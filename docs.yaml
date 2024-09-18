@@ -2163,7 +2163,7 @@ paths:
                   summary: paymentType = QR
                   value:
                     data:
-                      expireAt: "2021-01-01T00:00:00Z"
+                      expiresAt: "2021-01-01T00:00:00Z"
                       msg: "success"
                       orderNo: "TEST_ORDER"
                       orderStatus: "PLACED"
@@ -2175,7 +2175,7 @@ paths:
                   summary: paymentType = Card
                   value:
                     data:
-                      expireAt: "2021-01-01T00:00:00Z"
+                      expiresAt: "2021-01-01T00:00:00Z"
                       msg: "success"
                       orderNo: "TEST_ORDER"
                       orderStatus: "PLACED"
@@ -2187,7 +2187,7 @@ paths:
                   summary: created but payment failed
                   value:
                     data:
-                      expireAt: "2021-01-01T00:00:00Z"
+                      expiresAt: "2021-01-01T00:00:00Z"
                       msg: ""
                       orderNo: "TEST_ORDER"
                       orderStatus: "PLACED"
@@ -2495,7 +2495,7 @@ paths:
                   summary: paymentType = QR
                   value:
                     data:
-                      expireAt: "2021-01-01T00:00:00Z"
+                      expiresAt: "2021-01-01T00:00:00Z"
                       msg: "success"
                       orderNo: "TEST_ORDER"
                       orderStatus: "PLACED"
@@ -2507,7 +2507,7 @@ paths:
                   summary: paymentType = Card
                   value:
                     data:
-                      expireAt: "2021-01-01T00:00:00Z"
+                      expiresAt: "2021-01-01T00:00:00Z"
                       msg: "success"
                       orderNo: "TEST_ORDER"
                       orderStatus: "PLACED"
@@ -2519,7 +2519,7 @@ paths:
                   summary: created but payment failed
                   value:
                     data:
-                      expireAt: "2021-01-01T00:00:00Z"
+                      expiresAt: "2021-01-01T00:00:00Z"
                       msg: ""
                       orderNo: "TEST_ORDER"
                       orderStatus: "PLACED"
@@ -3532,7 +3532,7 @@ components:
       properties:
         authorizeUrl:
           type: string
-        expireAt:
+        expiresAt:
           type: string
         msg:
           type: string
