@@ -1803,32 +1803,25 @@ paths:
       tags:
         - Admin Quotation
       parameters:
-        - name: x-nocnoc-platform
-          in: header
-          schema:
-            type: string
-        - name: x-nocnoc-device-os
-          in: header
-          schema:
-            type: string
-        - name: x-cookie-id
-          in: header
-          schema:
-            type: string
-        - name: x-session-id
-          in: header
-          schema:
-            type: string
-        - name: x-request-id
-          in: header
-          schema:
-            type: string
+        
         - name: x-nocnoc-id
           in: header
           required: true
           description: nocnoc-id decrypt by local authorizer
           schema:
             type: string
+        - name: Accept-Language
+          in: header
+          description: not required and default to en
+          schema:
+            type: string
+        - name: x-nocnoc-platform
+          in: header
+          required: false
+          description: nocnoc-platform (when = "app" will get loyalty point)
+          schema:
+            type: string
+          example: "web"
       requestBody:
         description: Sum the final quotation
         content:
@@ -2163,7 +2156,45 @@ paths:
                 properties:
                   data:
                     type: object
-                    $ref: "#/components/schemas/order"
+                    oneOf:
+                      - $ref: "#/components/schemas/order"
+              examples:
+                PaymentTypeQR:
+                  summary: paymentType = QR
+                  value:
+                    data:
+                      expireAt: "2021-01-01T00:00:00Z"
+                      msg: "success"
+                      orderNo: "TEST_ORDER"
+                      orderStatus: "PLACED"
+                      paymentType: "QR"
+                      authorizeUrl: ""
+                      scannableCode: "xxxxxxxx"
+                      transactionId: "zzzzzzzz"
+                PaymentTypeCard:
+                  summary: paymentType = Card
+                  value:
+                    data:
+                      expireAt: "2021-01-01T00:00:00Z"
+                      msg: "success"
+                      orderNo: "TEST_ORDER"
+                      orderStatus: "PLACED"
+                      paymentType: "CARD"
+                      authorizeUrl: "https://www.example.com"
+                      scannableCode: ""
+                      transactionId: "zzzzzzzz"
+                CreatedButPaymentFailed:
+                  summary: created but payment failed
+                  value:
+                    data:
+                      expireAt: "2021-01-01T00:00:00Z"
+                      msg: ""
+                      orderNo: "TEST_ORDER"
+                      orderStatus: "PLACED"
+                      paymentType: "QR"
+                      authorizeUrl: ""
+                      scannableCode: ""
+                      transactionId: "zzzzzzzz"
         "400":
           description: Invalid input
           content:
@@ -2457,7 +2488,45 @@ paths:
                 properties:
                   data:
                     type: object
-                    $ref: "#/components/schemas/order"
+                    oneOf:
+                      - $ref: "#/components/schemas/order"
+              examples:
+                PaymentTypeQR:
+                  summary: paymentType = QR
+                  value:
+                    data:
+                      expireAt: "2021-01-01T00:00:00Z"
+                      msg: "success"
+                      orderNo: "TEST_ORDER"
+                      orderStatus: "PLACED"
+                      paymentType: "QR"
+                      authorizeUrl: ""
+                      scannableCode: "xxxxxxxx"
+                      transactionId: "zzzzzzzz"
+                PaymentTypeCard:
+                  summary: paymentType = Card
+                  value:
+                    data:
+                      expireAt: "2021-01-01T00:00:00Z"
+                      msg: "success"
+                      orderNo: "TEST_ORDER"
+                      orderStatus: "PLACED"
+                      paymentType: "CARD"
+                      authorizeUrl: "https://www.example.com"
+                      scannableCode: ""
+                      transactionId: "zzzzzzzz"
+                CreatedButPaymentFailed:
+                  summary: created but payment failed
+                  value:
+                    data:
+                      expireAt: "2021-01-01T00:00:00Z"
+                      msg: ""
+                      orderNo: "TEST_ORDER"
+                      orderStatus: "PLACED"
+                      paymentType: "QR"
+                      authorizeUrl: ""
+                      scannableCode: ""
+                      transactionId: "zzzzzzzz"
         "400":
           description: Invalid input
           content:
