@@ -948,6 +948,185 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/ippDescription"
+                      ippSuggestion:
+                        description: "This field exists when user's order not eligible for IPP"
+                        type: object
+                        properties:
+                          cause:
+                            type: string
+                            enum: ["min_amount_not_reach", "more_than_1_sku"]
+                          subsidizer:
+                            type: string
+                            enum: ["platform", "seller"]
+                          activePromotionId:
+                            type: number
+                          ippOptionId:
+                            type: number
+                          minAmount:
+                            type: number
+              examples:
+                UserEligible:
+                  value:
+                    data:
+                      quotationSignature: hmac
+                      quotationData: BASE64
+                      canInstallment: true
+                      ippDescriptions: [
+                        {
+                          id: 1,
+                          term: 3,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "3 เดือน 0%",
+                          minAmount: 20000
+                        },
+                        {
+                          id: 2,
+                          term: 6,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "6 เดือน 0%",
+                          minAmount: 20000
+                        },
+                        {
+                          id: 3,
+                          term: 10,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "10 เดือน 0%",
+                          minAmount: 20000
+                        }
+                      ]
+                      ippSuggestion: null
+                UserNotEligiblePlatformMinAmount:
+                  value:
+                    data:
+                      quotationSignature: hmac
+                      quotationData: BASE64
+                      canInstallment: true
+                      ippDescriptions: [
+                        {
+                          id: 1,
+                          term: 3,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "3 เดือน 0%",
+                          minAmount: 20000
+                        },
+                        {
+                          id: 2,
+                          term: 6,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "6 เดือน 0%",
+                          minAmount: 20000
+                        },
+                        {
+                          id: 3,
+                          term: 10,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "10 เดือน 0%",
+                          minAmount: 20000
+                        }
+                      ]
+                      ippSuggestion: {
+                        cause: "min_amount_not_reach",
+                        subsidizer: "platform",
+                        activePromotionId: 1234,
+                        ippOptionId: 1,
+                        minAmount: 20000
+                      }
+                UserNotEligibleSellerMinAmount:
+                  value:
+                    data:
+                      quotationSignature: hmac
+                      quotationData: BASE64
+                      canInstallment: true
+                      ippDescriptions: [
+                        {
+                          id: 1,
+                          term: 3,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "3 เดือน 0%",
+                          minAmount: 20000
+                        },
+                        {
+                          id: 2,
+                          term: 6,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "6 เดือน 0%",
+                          minAmount: 20000
+                        },
+                        {
+                          id: 3,
+                          term: 10,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "10 เดือน 0%",
+                          minAmount: 20000
+                        }
+                      ]
+                      ippSuggestion: {
+                        cause: "min_amount_not_reach",
+                        subsidizer: "seller",
+                        activePromotionId: 4321,
+                        ippOptionId: 4,
+                        minAmount: 50000
+                      }
+                UserNotEligibleSellerMoreThan1Sku:
+                  value:
+                    data:
+                      quotationSignature: hmac
+                      quotationData: BASE64
+                      canInstallment: true
+                      ippDescriptions: [
+                        {
+                          id: 1,
+                          term: 3,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "3 เดือน 0%",
+                          minAmount: 20000
+                        },
+                        {
+                          id: 2,
+                          term: 6,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "6 เดือน 0%",
+                          minAmount: 20000
+                        },
+                        {
+                          id: 3,
+                          term: 10,
+                          rate: 0,
+                          nocnocSub: true,
+                          sellerSub: true,
+                          title: "10 เดือน 0%",
+                          minAmount: 20000
+                        }
+                      ]
+                      ippSuggestion: {
+                        cause: "more_than_1_sku",
+                        subsidizer: "seller",
+                        activePromotionId: 4321,
+                        ippOptionId: 4,
+                        minAmount: 50000
+                      }
         '400':
           description: Bad Request
           content:
@@ -2367,8 +2546,8 @@ paths:
                   summary: error breakdown sale order
                   value:
                     errors:
-                      title: "error_breakdown_sale_order"
-                      detail: "error breakdown sale order"
+                      title: "error_break_down_sale_order"
+                      detail: "error break down sale order"
                 ErrorGetNoncnocDiscountPoint:
                   summary: error get noncnoc discount point
                   value:
