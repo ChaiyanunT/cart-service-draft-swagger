@@ -3069,17 +3069,12 @@ components:
         pageUrl:
           type: string
           example: "http://cdn.nocnoc.com"
-        tag:
+        tags:
           type: array
           items:
-            type: object
-            properties:
-              key:
-                type: string
-                example: quality-shop
-              name:
-                type: string
-                example: quality-shop
+            $ref: "#/components/schemas/SellerTag"
+        analytics:
+          $ref: "#/components/schemas/SellerAnalytics"
         products:
           type: array
           items:
@@ -3089,6 +3084,89 @@ components:
           properties:
             shopCoupon:
               $ref: "#/components/schemas/cartShopPromotionModel"
+    SellerTag:
+      type: object
+      required:
+        - key
+        - name
+      properties:
+        key:
+          type: string
+          enum: [quality_shop,mall_official,mall_authorized]
+          example: quality_shop
+        name:
+          type: string
+          example: quality shop
+    SellerAnalytics:
+      type: object
+      properties:
+        sellerTag:
+          type: array
+          items:
+            type: string
+            enum: [preferred_seller,mall]
+            example: ["mall"]
+        sellerType:
+          type: string
+          enum: [authorized,official]
+          example: official
+        isPreferredSeller:
+          type: boolean
+          example: true
+    ProductTag:
+      type: object
+      description: show in front of product title when feature show new product tag is on
+      required:
+        - key
+        - name
+      properties:
+        key:
+          type: string
+          enum: [easy_e_receipt,otop_easy,best_price,nocnoc_choice,nocnoc_craft]
+          example: easy_e_receipt
+        name:
+          type: string
+          example: easy_e_receipt
+    ProductAnalytics:
+      type: object
+      description: "show when feature show new product tag is on"
+      properties:
+        isFlashSale:
+          type: boolean
+          example: true
+        productTag:
+          type: array
+          items:
+            type: string
+            description: "nocnoc_0%_installment กับ seller_0%_installment เป็นผ่อน 0% ใช้ tag UI เหมือนกัน, assembly/installation_required เฉพาะ PDP, free_shipping เฉพาะหน้า cart"
+            enum: [easy_e_receipt,best_price,nocnoc_choice,nocnoc_craft,nocnoc_0%_installment,seller_0%_installment,seller_free_installation,assembly/installation_required,made_to_order,free_shipping,clearance,nocnoc_connect,tax_invoice]
+            example: ["easy_e_receipt","nocnoc_0%_installment","seller_free_installation","made_to_order","tax_invoice"]
+    ProductBadge:
+      type: object
+      required:
+        - type
+        - name
+        - key
+      properties:
+        key:
+          type: string
+          enum: [clearance,custom-made,tax-invoice,installment,free-shipping,sample]
+          example: installment
+        name:
+          type: string
+          example: installment
+        type:
+          type: string
+          enum: [fully-badge,badge,icon]
+          example: badge
+    ProductFlashSale:
+      type: object
+      properties:
+        endDate:
+          type: string
+          description: iso8601 format
+          format: date-time
+          example: "2021-01-01T00:00:00Z"
     cartProductModel:
       type: object
       required:
@@ -3121,20 +3199,18 @@ components:
         imageUrl:
           type: string
           example: "https://cdn.nocnoc.com"
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductTag"
+        analytics:
+          $ref: "#/components/schemas/ProductAnalytics"
         badges:
           type: array
           items:
-            type: object
-            properties:
-              key:
-                type: string
-                example: sample
-              name:
-                type: string
-                example: sample
-              type:
-                type: string
-                example: badge
+            $ref: "#/components/schemas/ProductBadge"
+        flashSale:
+          $ref: "#/components/schemas/ProductFlashSale"
         price:
           type: number
           format: double
@@ -3344,7 +3420,13 @@ components:
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagDetail"
+            $ref: "#/components/schemas/SellerTag"
+        analytics:
+          $ref: "#/components/schemas/SellerAnalytics"
+        # tags:
+        #   type: array
+        #   items:
+        #     $ref: "#/components/schemas/TagDetail"
         promotion:
           type: object
           properties:
@@ -3415,10 +3497,16 @@ components:
         imageUrl:
           type: string
           example: https://cdn.nocnoc.com
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductTag"
+        analytics:
+          $ref: "#/components/schemas/ProductAnalytics"
         badges:
           type: array
           items:
-            $ref: "#/components/schemas/BadgeDetail"
+            $ref: "#/components/schemas/ProductBadge"
         price:
           type: number
           example: 120.12
@@ -3446,31 +3534,6 @@ components:
         subSubCategory:
           type: string
           example: Air Conditioner
-    BadgeDetail:
-      type: object
-      required:
-        - type
-        - name
-        - key
-      properties:
-        key:
-          type: string
-          example: example
-        name:
-          type: string
-          example: example
-        type:
-          type: string
-          example: badge
-    TagDetail:
-      type: object
-      properties:
-        key:
-          type: string
-          example: quality-shop
-        name:
-          type: string
-          example: quality-shop
     DeliveryOptionDetail:
       type: object
       required:
