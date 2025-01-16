@@ -3104,11 +3104,19 @@ components:
           type: array
           items:
             type: string
-            enum: [preferred_seller,mall]
-            example: ["mall"]
+            enum: [
+              preferred_seller,
+              mall
+            ]
+            example: [
+              "mall"
+            ]
         sellerType:
           type: string
-          enum: [authorized,official]
+          enum: [
+            authorized,
+            official
+          ]
           example: official
         isPreferredSeller:
           type: boolean
@@ -3138,9 +3146,31 @@ components:
           type: array
           items:
             type: string
-            description: "nocnoc_0%_installment กับ seller_0%_installment เป็นผ่อน 0% ใช้ tag UI เหมือนกัน, assembly/installation_required เฉพาะ PDP, free_shipping เฉพาะหน้า cart"
-            enum: [easy_e_receipt,best_price,nocnoc_choice,nocnoc_craft,nocnoc_0%_installment,seller_0%_installment,seller_free_installation,assembly/installation_required,made_to_order,free_shipping,clearance,nocnoc_connect,tax_invoice]
-            example: ["easy_e_receipt","nocnoc_0%_installment","seller_free_installation","made_to_order","tax_invoice"]
+            description: "assembly/installation_required เฉพาะ PDP, free_shipping เฉพาะ cart, seller_free_installation เฉพาะ quotation"
+            enum: [
+              easy_e_receipt,
+              otop,
+              best_price,
+              nocnoc_choice,
+              nocnoc_craft,
+              clearance,
+              made_to_order,
+              tax_invoice,
+              nocnoc_0%_installment,
+              seller_0%_installment,
+              free_shipping,
+              seller_free_installation,
+              assembly/installation_required,
+              nocnoc_connect,
+              sample
+            ]
+            example: [
+              "easy_e_receipt",
+              "otop",
+              "nocnoc_0%_installment",
+              "made_to_order",
+              "tax_invoice"
+            ]
     ProductBadge:
       type: object
       required:
@@ -3423,10 +3453,6 @@ components:
             $ref: "#/components/schemas/SellerTag"
         analytics:
           $ref: "#/components/schemas/SellerAnalytics"
-        # tags:
-        #   type: array
-        #   items:
-        #     $ref: "#/components/schemas/TagDetail"
         promotion:
           type: object
           properties:
